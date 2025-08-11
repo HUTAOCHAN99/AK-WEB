@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al Khawarizmi</title>
+  <!-- shortcut icon -->
+  <link rel="shortcut icon" href="assets/alkhawarizmi.png">
+  <!-- output css tailwind -->
+  <link href="../src/output.css" rel="stylesheet">
+  <!-- google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Header Styles */
+    .header-top {
+      padding-top: 0.5rem;
+      /* Diperkecil dari 1rem */
+      padding-bottom: 0.5rem;
+      /* Diperkecil dari 1rem */
+      background-color: transparent;
+      backdrop-filter: none;
+    }
+
+
+    .header-scrolled {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      background-color: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Logo Styles */
+    .header-top .logo-container {
+      width: 5rem;
+      transition: all 0.3s ease;
+    }
+
+    .header-scrolled .logo-container {
+      width: 3.5rem;
+    }
+
+    /* Hero Section Adjustment */
+    .min-h-screen {
+      min-height: 100vh;
+    }
+
+    /* Tambahkan di bagian style Anda */
+    @media (max-width: 1023px) {
+      #home {
+        padding-top: 6rem;
+        /* Sesuaikan dengan tinggi header */
+        padding-bottom: 4rem;
+      }
+
+      #home .flex-col {
+        flex-direction: column;
+      }
+
+      #home .order-1 {
+        order: 1;
+      }
+
+      #home .order-2 {
+        order: 2;
+      }
+
+      #home img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .min-h-screen {
+        padding-top: 4rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 font-poppins">
+  <!-- BackToTop btn Start -->
+  <div id="backtop" class="fixed bottom-8 right-8 z-50 opacity-0 invisible transition-all duration-300">
+    <a href="#home" id="backtop-link" class="
+    bg-primary 
+    hover:bg-primary-dark 
+    text-white 
+    p-3 
+    rounded-full 
+    shadow-lg 
+    inline-flex 
+    items-center 
+    justify-center
+    transition
+    duration-300
+  ">
+      <iconify-icon icon="bxs:up-arrow" class="text-xl"></iconify-icon>
+    </a>
+  </div>
+  <!-- BackToTop btn End -->
+
+  <!-- Header Section Start -->
+  <header class="fixed top-0 left-0 w-full z-50 transition-all duration-300 header-top">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between py-4">
+        <!-- Logo -->
+        <div class="logo-container transition-all duration-300">
+          <a href="#home">
+            <img src="../assets/alkhawarizmi.png" alt="logo rs" class="w-full h-auto">
+          </a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden lg:block">
+          <ul class="flex space-x-8">
+            <li class="group">
+              <a href="#home" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                Home
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+            <li class="group">
+              <a href="#about" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                About
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+            <li class="group">
+              <a href="#services" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                Division
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+            <li class="group">
+              <a href="#skills" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                Benefit & Partner
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+            <li class="group">
+              <a href="#project" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                Activity
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+            <li class="group">
+              <a href="#contact" class="
+                text-gray-300 
+                hover:text-white 
+                font-medium 
+                py-2 
+                relative 
+                transition 
+                duration-300
+              ">
+                Contact
+                <span class="
+                  absolute 
+                  bottom-0 
+                  left-0 
+                  w-0 
+                  h-0.5 
+                  bg-primary 
+                  group-hover:w-full 
+                  transition-all 
+                  duration-300
+                "></span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button id="humberger" class="
+          lg:hidden 
+          p-2 
+          rounded-lg 
+          focus:outline-none 
+          focus:ring-2 
+          focus:ring-primary
+        ">
+          <span class="
+            block 
+            w-6 
+            h-0.5 
+            bg-white 
+            mb-1.5 
+            transition 
+            duration-300
+          "></span>
+          <span class="
+            block 
+            w-6 
+            h-0.5 
+            bg-white 
+            mb-1.5 
+            transition 
+            duration-300
+          "></span>
+          <span class="
+            block 
+            w-6 
+            h-0.5 
+            bg-white 
+            transition 
+            duration-300
+          "></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav id="nav-menu" class="
+      hidden 
+      lg:hidden 
+      bg-gray-800 
+      shadow-xl 
+      transition-all 
+      duration-300
+    ">
+      <div class="container mx-auto px-4 py-3">
+        <ul class="space-y-4">
+          <li>
+            <a href="#home" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="#about" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              About
+            </a>
+          </li>
+          <li>
+            <a href="#services" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              Division
+            </a>
+          </li>
+          <li>
+            <a href="#skills" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              Benefit & Partner
+            </a>
+          </li>
+          <li>
+            <a href="#project" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              Activity
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="
+              block 
+              py-2 
+              px-4 
+              rounded 
+              text-white 
+              hover:bg-gray-700 
+              transition 
+              duration-300
+            ">
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Header Section End -->
+
+  <main>
+    <!-- Hero Section Start -->
+    <section id="home" class="
+      min-h-screen 
+      bg-gradient-to-b 
+      from-gray-900 
+      to-gray-800 
+      pb-16
+    ">
+      <div class="container mx-auto px-4">
+        <div class="
+          flex 
+          flex-col 
+          lg:flex-row 
+          items-center 
+          justify-between 
+          gap-12
+        ">
+          <!-- Left Content -->
+          <div class="relative lg:w-1/2 h-full">
+            <!-- Gambar Background -->
+            <img src="../assets/B1-AlKhawarizmi.png" alt="Al Khawarizmi"
+              class="w-full h-full object-cover max-w-md mx-auto lg:mx-0">
+
+            <!-- Overlay Container -->
+            <div class="absolute inset-0 flex items-end p-6">
+              <!-- Container Teks + Social Media -->
+              <div class="space-y-4 text-left">
+                <!-- Teks -->
+                <div>
+                  <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+                    KKMI
+                    <span class="block">AL-Khawarizmi</span>
+                  </h1>
+                  <div class="w-14 h-1 bg-primary mt-2"></div>
+                </div>
+
+                <!-- Social Icons -->
+                <div class="flex space-x-6">
+                  <a href="https://github.com/Al-Khawarizmi-UPNYK" target="_blank"
+                    class="text-gray-300 hover:text-white text-2xl transition duration-300">
+                    <iconify-icon icon="akar-icons:github-fill"></iconify-icon>
+                  </a>
+                  <a href="https://www.instagram.com/alkhawarizmiifupnyk" target="_blank"
+                    class="text-gray-300 hover:text-white text-2xl transition duration-300">
+                    <iconify-icon icon="akar-icons:instagram-fill"></iconify-icon>
+                  </a>
+                  <a href="https://www.linkedin.com/company/kkmi-al-khawarizmi-upnyk/" target="_blank"
+                    class="text-gray-300 hover:text-white text-2xl transition duration-300">
+                    <iconify-icon icon="akar-icons:linkedin-fill"></iconify-icon>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Right Content -->
+          <div class="lg:w-1/2">
+            <p class="
+              text-primary 
+              font-semibold 
+              mb-4 
+              tracking-wider
+            ">
+              -- Introduction
+            </p>
+            <h2 class="
+              text-2xl 
+              md:text-3xl 
+              font-medium 
+              text-white 
+              mb-6
+            ">
+              Muslim Family Organizations, based in Informatics Engineering.
+            </h2>
+            <p class="
+              text-gray-300 
+              mb-8 
+              text-justify
+            ">
+              We are a Muslim Family Organization. We have a passion to build and develop the Akhlaq and also the
+              environment of Muslim students.
+            </p>
+            <a href="#about" class="
+              inline-flex 
+              items-center 
+              text-primary 
+              font-medium 
+              hover:text-primary-light 
+              transition 
+              duration-300
+            ">
+              Our Journey
+              <iconify-icon icon="bi:arrow-right" class="ml-2 text-xl"></iconify-icon>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Hero Section End -->
+
+    <!-- About Section Start -->
+    <section id="about" class=" bg-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col lg:flex-row-reverse items-center gap-12">
+          <!-- Image -->
+          <div class="lg:w-1/2">
+            <p class="
+              text-primary 
+              font-semibold 
+              mb-4 
+              tracking-wider 
+              lg:hidden
+            ">
+              -- About
+            </p>
+            <div class="rounded-lg overflow-hidden shadow-xl">
+              <img src="../assets/B2-Alkhawarizmi.png" alt="About Al Khawarizmi" class="w-full h-auto">
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="lg:w-1/2">
+            <p class="
+              text-primary 
+              font-semibold 
+              mb-4 
+              tracking-wider 
+              hidden 
+              lg:block
+            ">
+              -- About
+            </p>
+            <p class="text-gray-300 mb-8 text-justify">
+              Hello everyone 👋, Kami adalah perkumpulan mahasiswa Islam di Informatika UPNYK, dikenal sebagai
+              Organisasi Dakwah Kampus. Kami berkiprah di tingkat jurusan Informatika dengan tujuan menyelaraskan dakwah
+              dan IPTEK. Melalui usaha kami, kami berusaha menciptakan lingkungan yang seimbang di mana nilai-nilai
+              keislaman dan ilmu pengetahuan berjalan beriringan, memberdayakan mahasiswa untuk unggul secara spiritual
+              dan akademis.
+            </p>
+            <div class="text-center lg:text-left">
+              <a href="#" class="
+                inline-flex 
+                items-center 
+                bg-primary 
+                hover:bg-primary-dark 
+                text-white 
+                font-medium 
+                py-3 
+                px-6 
+                rounded-lg 
+                shadow 
+                hover:shadow-md 
+                transition 
+                duration-300
+              ">
+                <iconify-icon icon="fa-solid:download" class="mr-2"></iconify-icon>
+                Download Profile
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journey Tabs -->
+        <div class="mt-16">
+          <h2 class="
+            text-2xl 
+            font-semibold 
+            text-white 
+            text-center 
+            mb-8
+          ">
+            Our Journey
+          </h2>
+
+          <!-- Tabs -->
+          <div x-data="{ activeTab: 0 }" class="max-w-4xl mx-auto">
+            <div class="flex justify-center border-b border-gray-700 mb-8">
+              <button @click="activeTab = 0"
+                :class="activeTab === 0 ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'"
+                class="
+                  px-6 
+                  py-2 
+                  font-medium 
+                  transition 
+                  duration-300
+                ">
+                Timeline
+              </button>
+              <button @click="activeTab = 1"
+                :class="activeTab === 1 ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'"
+                class="
+                  px-6 
+                  py-2 
+                  font-medium 
+                  transition 
+                  duration-300
+                ">
+                Experience
+              </button>
+              <button @click="activeTab = 2"
+                :class="activeTab === 2 ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'"
+                class="
+                  px-6 
+                  py-2 
+                  font-medium 
+                  transition 
+                  duration-300
+                ">
+                Awards
+              </button>
+            </div>
+
+            <!-- Timeline Content -->
+            <div x-show="activeTab === 0" class="
+              relative 
+              max-w-2xl 
+              mx-auto 
+              pl-8 
+              sm:pl-0
+            ">
+              <!-- Timeline line -->
+              <div class="
+                absolute 
+                left-0 
+                sm:left-1/2 
+                w-0.5 
+                h-full 
+                bg-gray-700 
+                sm:transform 
+                sm:-translate-x-1/2
+              "></div>
+
+              <!-- Timeline items -->
+              <div class="space-y-8">
+                <!-- Item 1 -->
+                <div class="relative">
+                  <div class="
+                    absolute 
+                    left-0 
+                    sm:left-1/2 
+                    -ml-3.5 
+                    sm:-ml-3 
+                    top-0 
+                    w-6 
+                    h-6 
+                    rounded-full 
+                    bg-primary 
+                    border-4 
+                    border-gray-800 
+                    transform 
+                    sm:-translate-x-1/2
+                  "></div>
+                  <div class="
+                    pl-10 
+                    sm:pl-0 
+                    sm:grid 
+                    sm:grid-cols-2 
+                    sm:gap-4
+                  ">
+                    <div class="sm:text-right sm:pr-8">
+                      <h4 class="font-semibold text-white">Camping</h4>
+                      <p class="text-sm text-gray-400">
+                        <iconify-icon icon="akar-icons:calendar" class="mr-1"></iconify-icon>
+                        26-Juli-2024
+                      </p>
+                    </div>
+                    <div class="mt-2 sm:mt-0 sm:pl-8">
+                      <p class="text-gray-300">First organizational camping event</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="relative">
+                  <div class="
+                    absolute 
+                    left-0 
+                    sm:left-1/2 
+                    -ml-3.5 
+                    sm:-ml-3 
+                    top-0 
+                    w-6 
+                    h-6 
+                    rounded-full 
+                    bg-primary 
+                    border-4 
+                    border-gray-800 
+                    transform 
+                    sm:-translate-x-1/2
+                  "></div>
+                  <div class="
+                    pl-10 
+                    sm:pl-0 
+                    sm:grid 
+                    sm:grid-cols-2 
+                    sm:gap-4
+                  ">
+                    <div class="sm:text-right sm:pr-8">
+                      <h4 class="font-semibold text-white">Mubes</h4>
+                      <p class="text-sm text-gray-400">
+                        <iconify-icon icon="akar-icons:calendar" class="mr-1"></iconify-icon>
+                        5-Agustus-2024
+                      </p>
+                    </div>
+                    <div class="mt-2 sm:mt-0 sm:pl-8">
+                      <p class="text-gray-300">Annual general meeting</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- More timeline items... -->
+              </div>
+            </div>
+
+            <!-- Experience Content -->
+            <div x-show="activeTab === 1" class="space-y-6">
+              <!-- Experience items... -->
+            </div>
+
+            <!-- Awards Content -->
+            <div x-show="activeTab === 2" class="space-y-6">
+              <!-- Awards items... -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- About Section End -->
+
+    <!-- Division Section Start -->
+    <section id="services" class="py-16 bg-gray-900">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <p class="
+            text-primary 
+            font-semibold 
+            mb-2 
+            tracking-wider
+          ">
+            -- Division
+          </p>
+          <h2 class="
+            text-3xl 
+            font-semibold 
+            text-white
+          ">
+            Our Divisions
+          </h2>
+        </div>
+
+        <div class="
+          grid 
+          grid-cols-1 
+          md:grid-cols-2 
+          lg:grid-cols-4 
+          gap-8
+        ">
+          <!-- Division 1 -->
+          <div class="
+            bg-gray-800 
+            rounded-xl 
+            p-6 
+            shadow-lg 
+            hover:shadow-xl 
+            transition 
+            duration-300
+            border-l-4 
+            border-primary
+          ">
+            <div class="
+              text-primary 
+              text-3xl 
+              mb-4
+            ">
+              <iconify-icon icon="charm:layout-stack-v"></iconify-icon>
+            </div>
+            <h3 class="
+              text-xl 
+              font-semibold 
+              text-white 
+              mb-2
+            ">
+              Divisi Kaderisasi
+            </h3>
+            <p class="
+              text-gray-300 
+              mb-4
+            ">
+              Merekrut dan mengembangkan anggota baru.
+            </p>
+            <button class="
+              text-primary 
+              font-medium 
+              hover:text-primary-light 
+              transition
+              flex 
+              items-center
+            ">
+              View More
+              <iconify-icon icon="bi:arrow-right" class="ml-2"></iconify-icon>
+            </button>
+          </div>
+
+          <!-- Division 2 -->
+          <div class="
+            bg-gray-800 
+            rounded-xl 
+            p-6 
+            shadow-lg 
+            hover:shadow-xl 
+            transition 
+            duration-300
+            border-l-4 
+            border-primary
+          ">
+            <div class="
+              text-primary 
+              text-3xl 
+              mb-4
+            ">
+              <iconify-icon icon="charm:code"></iconify-icon>
+            </div>
+            <h3 class="
+              text-xl 
+              font-semibold 
+              text-white 
+              mb-2
+            ">
+              Divisi Syiar
+            </h3>
+            <p class="
+              text-gray-300 
+              mb-4
+            ">
+              Menyebarkan dakwah dan nilai-nilai Islam.
+            </p>
+            <button class="
+              text-primary 
+              font-medium 
+              hover:text-primary-light 
+              transition
+              flex 
+              items-center
+            ">
+              View More
+              <iconify-icon icon="bi:arrow-right" class="ml-2"></iconify-icon>
+            </button>
+          </div>
+
+          <!-- Division 3 -->
+          <div class="
+            bg-gray-800 
+            rounded-xl 
+            p-6 
+            shadow-lg 
+            hover:shadow-xl 
+            transition 
+            duration-300
+            border-l-4 
+            border-primary
+          ">
+            <div class="
+              text-primary 
+              text-3xl 
+              mb-4
+            ">
+              <iconify-icon icon="charm:pencil"></iconify-icon>
+            </div>
+            <h3 class="
+              text-xl 
+              font-semibold 
+              text-white 
+              mb-2
+            ">
+              Divisi Muslimah
+            </h3>
+            <p class="
+              text-gray-300 
+              mb-4
+            ">
+              Khusus untuk anggota perempuan.
+            </p>
+            <button class="
+              text-primary 
+              font-medium 
+              hover:text-primary-light 
+              transition
+              flex 
+              items-center
+            ">
+              View More
+              <iconify-icon icon="bi:arrow-right" class="ml-2"></iconify-icon>
+            </button>
+          </div>
+
+          <!-- Division 4 -->
+          <div class="
+            bg-gray-800 
+            rounded-xl 
+            p-6 
+            shadow-lg 
+            hover:shadow-xl 
+            transition 
+            duration-300
+            border-l-4 
+            border-primary
+          ">
+            <div class="
+              text-primary 
+              text-3xl 
+              mb-4
+            ">
+              <iconify-icon icon="charm:monitor"></iconify-icon>
+            </div>
+            <h3 class="
+              text-xl 
+              font-semibold 
+              text-white 
+              mb-2
+            ">
+              Divisi Medinfo
+            </h3>
+            <p class="
+              text-gray-300 
+              mb-4
+            ">
+              Media dan informasi organisasi.
+            </p>
+            <button class="
+              text-primary 
+              font-medium 
+              hover:text-primary-light 
+              transition
+              flex 
+              items-center
+            ">
+              View More
+              <iconify-icon icon="bi:arrow-right" class="ml-2"></iconify-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Division Section End -->
+
+    <!-- Benefit Section Start -->
+    <section id="skills" class="py-16 bg-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <p class="
+            text-primary 
+            font-semibold 
+            mb-2 
+            tracking-wider
+          ">
+            -- Benefit & Partner
+          </p>
+          <h2 class="
+            text-3xl 
+            font-semibold 
+            text-white
+          ">
+            Our Benefits and Partners
+          </h2>
+        </div>
+
+        <div class="
+          flex 
+          flex-wrap 
+          justify-center 
+          gap-8 
+          max-w-4xl 
+          mx-auto
+        ">
+          <!-- Partner/benefit logos -->
+          <div class="
+            bg-gray-700 
+            p-6 
+            rounded-lg 
+            shadow 
+            hover:shadow-lg 
+            transition 
+            duration-300
+          ">
+            <img src="../assets/skills/html.svg" alt="HTML" class="h-12">
+          </div>
+          <div class="
+            bg-gray-700 
+            p-6 
+            rounded-lg 
+            shadow 
+            hover:shadow-lg 
+            transition 
+            duration-300
+          ">
+            <img src="../assets/skills/css.svg" alt="CSS" class="h-12">
+          </div>
+          <!-- More partner/benefit logos... -->
+        </div>
+      </div>
+    </section>
+    <!-- Benefit Section End -->
+
+    <!-- Activity Section Start -->
+    <section id="project" class="py-16 bg-gray-900">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <p class="
+            text-primary 
+            font-semibold 
+            mb-2 
+            tracking-wider
+          ">
+            -- Activity
+          </p>
+          <h2 class="
+            text-3xl 
+            font-semibold 
+            text-white
+          ">
+            Our Activities
+          </h2>
+        </div>
+
+        <div class="
+          grid 
+          grid-cols-1 
+          md:grid-cols-2 
+          lg:grid-cols-3 
+          gap-8
+        ">
+          <!-- Activity 1 -->
+          <div class="
+            relative 
+            group 
+            overflow-hidden 
+            rounded-lg 
+            shadow-lg 
+            hover:shadow-xl 
+            transition 
+            duration-300
+          ">
+            <img src="../assets/portfolio/RAR-Rental/Home.PNG" alt="Activity 1" class="
+                w-full 
+                h-64 
+                object-cover 
+                transition 
+                duration-500 
+                group-hover:scale-110
+              ">
+            <div class="
+              absolute 
+              inset-0 
+              bg-gradient-to-t 
+              from-gray-900 
+              via-gray-900/70 
+              to-transparent 
+              flex 
+              items-end 
+              p-6
+            ">
+              <div>
+                <h3 class="
+                  text-xl 
+                  font-semibold 
+                  text-white 
+                  mb-2
+                ">
+                  Camping Activity
+                </h3>
+                <p class="text-gray-300">Outdoor team building</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- More activities... -->
+        </div>
+      </div>
+    </section>
+    <!-- Activity Section End -->
+
+    <!-- Contact Section Start -->
+    <section id="contact" class="py-16 bg-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col lg:flex-row gap-12">
+          <!-- Contact Form -->
+          <div class="lg:w-1/2">
+            <div class="mb-8">
+              <p class="
+                text-primary 
+                font-semibold 
+                mb-2 
+                tracking-wider
+              ">
+                -- Contact
+              </p>
+              <h2 class="
+                text-3xl 
+                font-semibold 
+                text-white
+              ">
+                Get In Touch
+              </h2>
+            </div>
+
+            <form action="https://formsubmit.co/alkhawarizmiifupnyk@gmail.com" method="POST" class="space-y-6">
+              <div>
+                <label for="name" class="
+                  block 
+                  text-gray-300 
+                  font-medium 
+                  mb-2
+                ">
+                  Name
+                </label>
+                <input type="text" id="name" name="name" required class="
+                    w-full 
+                    px-4 
+                    py-3 
+                    bg-gray-700 
+                    border 
+                    border-gray-600 
+                    rounded-lg 
+                    focus:outline-none 
+                    focus:ring-2 
+                    focus:ring-primary 
+                    text-white 
+                    transition 
+                    duration-300
+                  " placeholder="Your Name">
+              </div>
+
+              <div>
+                <label for="email" class="
+                  block 
+                  text-gray-300 
+                  font-medium 
+                  mb-2
+                ">
+                  Email
+                </label>
+                <input type="email" id="email" name="email" required class="
+                    w-full 
+                    px-4 
+                    py-3 
+                    bg-gray-700 
+                    border 
+                    border-gray-600 
+                    rounded-lg 
+                    focus:outline-none 
+                    focus:ring-2 
+                    focus:ring-primary 
+                    text-white 
+                    transition 
+                    duration-300
+                  " placeholder="you@example.com">
+              </div>
+
+              <div>
+                <label for="message" class="
+                  block 
+                  text-gray-300 
+                  font-medium 
+                  mb-2
+                ">
+                  Message
+                </label>
+                <textarea id="message" name="message" rows="4" class="
+                    w-full 
+                    px-4 
+                    py-3 
+                    bg-gray-700 
+                    border 
+                    border-gray-600 
+                    rounded-lg 
+                    focus:outline-none 
+                    focus:ring-2 
+                    focus:ring-primary 
+                    text-white 
+                    transition 
+                    duration-300
+                  " placeholder="Your Message"></textarea>
+              </div>
+
+              <button type="submit" class="
+                w-full 
+                bg-primary 
+                hover:bg-primary-dark 
+                text-white 
+                font-medium 
+                py-3 
+                px-6 
+                rounded-lg 
+                shadow 
+                hover:shadow-md 
+                transition 
+                duration-300
+              ">
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="lg:w-1/2">
+            <h2 class="
+              text-3xl 
+              font-semibold 
+              text-white 
+              mb-8
+            ">
+              Be a part of our team?
+              <span class="block">Let's Join!</span>
+            </h2>
+
+            <div class="space-y-6">
+              <div class="flex items-start">
+                <div class="
+                  text-primary 
+                  text-xl 
+                  mr-4 
+                  mt-1
+                ">
+                  <iconify-icon icon="charm:map-pin"></iconify-icon>
+                </div>
+                <div>
+                  <h4 class="
+                    text-lg 
+                    font-semibold 
+                    text-white 
+                    mb-1
+                  ">
+                    Location
+                  </h4>
+                  <a href="https://maps.app.goo.gl/z8KxLwoDgtP68AhJ6" target="_blank" class="
+                      text-gray-300 
+                      hover:text-primary 
+                      transition 
+                      duration-300
+                    ">
+                    Lantai PATT II, Gedung Pattimura, Kampus II UPNVY
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <div class="
+                  text-primary 
+                  text-xl 
+                  mr-4 
+                  mt-1
+                ">
+                  <iconify-icon icon="charm:mail"></iconify-icon>
+                </div>
+                <div>
+                  <h4 class="
+                    text-lg 
+                    font-semibold 
+                    text-white 
+                    mb-1
+                  ">
+                    Email
+                  </h4>
+                  <a href="mailto:alkhawarizmiifupnyk@gmail.com" class="
+                      text-gray-300 
+                      hover:text-primary 
+                      transition 
+                      duration-300
+                    ">
+                    alkhawarizmiifupnyk@gmail.com
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex items-start">
+                <div class="
+                  text-primary 
+                  text-xl 
+                  mr-4 
+                  mt-1
+                ">
+                  <iconify-icon icon="akar-icons:whatsapp-fill"></iconify-icon>
+                </div>
+                <div>
+                  <h4 class="
+                    text-lg 
+                    font-semibold 
+                    text-white 
+                    mb-1
+                  ">
+                    WhatsApp
+                  </h4>
+                  <a href="https://bit.ly/4bMUFnx" target="_blank" class="
+                      text-gray-300 
+                      hover:text-primary 
+                      transition 
+                      duration-300
+                    ">
+                    +62 8952 2897 040
+                  </a>
+                </div>
+              </div>
+
+              <div class="pt-8">
+                <a href="#" class="
+                    inline-flex 
+                    items-center 
+                    text-primary 
+                    font-medium 
+                    hover:text-primary-light 
+                    transition 
+                    duration-300
+                  ">
+                  Register Members
+                  <iconify-icon icon="bi:arrow-right" class="ml-2"></iconify-icon>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Contact Section End -->
+  </main>
+
+  <!-- Footer Start -->
+  <footer class="py-12 bg-gray-900 border-t border-gray-800">
+    <div class="container mx-auto px-4">
+      <div class="
+        flex 
+        flex-col 
+        md:flex-row 
+        justify-between 
+        items-center
+      ">
+        <!-- Logo -->
+        <div class="mb-6 md:mb-0">
+          <a href="#home">
+            <img src="../assets/alkhawarizmi.png" alt="Logo" class="h-16">
+          </a>
+        </div>
+
+        <!-- Social Links -->
+        <div class="
+          flex 
+          space-x-6 
+          mb-6 
+          md:mb-0
+        ">
+          <a href="https://github.com/Al-Khawarizmi-UPNYK" target="_blank" class="
+              text-gray-400 
+              hover:text-white 
+              text-2xl 
+              transition 
+              duration-300
+            ">
+            <iconify-icon icon="akar-icons:github-fill"></iconify-icon>
+          </a>
+          <a href="https://www.instagram.com/alkhawarizmiifupnyk" target="_blank" class="
+              text-gray-400 
+              hover:text-white 
+              text-2xl 
+              transition 
+              duration-300
+            ">
+            <iconify-icon icon="akar-icons:instagram-fill"></iconify-icon>
+          </a>
+          <a href="https://www.linkedin.com/company/kkmi-al-khawarizmi-upnyk/" target="_blank" class="
+              text-gray-400 
+              hover:text-white 
+              text-2xl 
+              transition 
+              duration-300
+            ">
+            <iconify-icon icon="akar-icons:linkedin-fill"></iconify-icon>
+          </a>
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-center md:text-right">
+          <p class="text-gray-400 text-sm">
+            Copyright © 2024 KKMI Al-Khawarizmi
+          </p>
+          <p class="text-gray-500 text-xs mt-1">
+            Muslim Family Organization
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Footer End -->
+
+  <!-- Scripts -->
+  <script src="https://code.iconify.design/iconify-icon/1.0.1/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.4.0/dist/alpine.min.js" defer></script>
+  <script src="../src/js/script.js"></script>
+</body>
+
+</html>
