@@ -6,7 +6,9 @@
     "tailwindcss": "^4.1.11"
   },
   "scripts": {
-    "build": "tailwindcss -i ./src/input.css -o ./src/output.css --minify"
+    "build": "tailwindcss -i ./src/input.css -o ./src/output.css --minify",
+    "start": "node src/server.js",
+    "dev": "npm run build && node src/server.js"
   },
   "name": "ak-web",
   "version": "1.0.0",
