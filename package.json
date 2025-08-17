@@ -1,9 +1,27 @@
 {
   "dependencies": {
+    "@supabase/supabase-js": "^2.55.0",
     "@tailwindcss/cli": "^4.1.11",
+    "dotenv": "^17.2.1",
     "tailwindcss": "^4.1.11"
   },
   "scripts": {
     "build": "tailwindcss -i ./src/input.css -o ./src/output.css --minify"
-  }
+  },
+  "name": "ak-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HUTAOCHAN99/AK-WEB.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/HUTAOCHAN99/AK-WEB/issues"
+  },
+  "homepage": "https://github.com/HUTAOCHAN99/AK-WEB#readme"
 }
