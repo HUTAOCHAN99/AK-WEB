@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - KKMI Al-Khawarizmi</title>
+  <link href="/src/output.css" rel="stylesheet">
+  <script src="/src/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <style>
+    .admin-container {
+      min-height: 100vh;
+      background-color: #111827;
+      color: white;
+    }
+    .timeline-item {
+      transition: all 0.2s;
+    }
+    .timeline-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      width: 100%;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body class="admin-container font-poppins">
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-2xl font-bold flex items-center">
+        <img src="/public/assets/alkhawarizmi.png" alt="Logo" class="h-10 mr-3">
+        Admin Dashboard
+      </h1>
+      <button id="logout-btn" class="flex items-center text-gray-400 hover:text-white">
+        <iconify-icon icon="mdi:logout" class="mr-2"></iconify-icon>
+        Logout
+      </button>
+    </div>
+    
+    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Timeline Management</h2>
+        <button id="add-timeline-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+          Add New
+        </button>
+      </div>
+      
+      <div id="timeline-list" class="space-y-4">
+        <!-- Timeline items will be loaded here -->
+        <div class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <p class="mt-2 text-gray-400">Loading timeline...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="timeline-modal" class="modal">
+    <div class="modal-content p-6 mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modal-title" class="text-lg font-semibold">Add Timeline Item</h3>
+        <button id="close-modal" class="text-gray-400 hover:text-white">
+          <iconify-icon icon="mdi:close"></iconify-icon>
+        </button>
+      </div>
+      
+      <form id="timeline-form" class="space-y-4">
+        <input type="hidden" id="timeline-id">
+        
+        <div>
+          <label for="title" class="block text-sm font-medium mb-2">Title</label>
+          <input type="text" id="title" required class="input-field">
+        </div>
+        
+        <div>
+          <label for="date" class="block text-sm font-medium mb-2">Date</label>
+          <input type="date" id="date" required class="input-field">
+        </div>
+        
+        <div>
+          <label for="description" class="block text-sm font-medium mb-2">Description</label>
+          <textarea id="description" rows="3" required class="input-field"></textarea>
+        </div>
+        
+        <div>
+          <label for="tags" class="block text-sm font-medium mb-2">Tags (comma separated)</label>
+          <input type="text" id="tags" class="input-field">
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" id="cancel-modal" class="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700">
+            Cancel
+          </button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/src/js/admin-dashboard.js"></script>
+</body>
+</html>

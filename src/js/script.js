@@ -22,7 +22,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // Setup event listeners
     setupEventListeners();
     
-    console.log("Website initialized successfully");
+    // Load timeline if on homepage
+    if (document.getElementById('timeline-container')) {
+      loadTimeline();
+    }
   }
 
   // ========== Header Effects ==========
@@ -49,7 +52,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function scrollToTop(e) {
     if (e) e.preventDefault();
-    
     window.scrollTo({
       top: 0,
       behavior: "smooth"
@@ -88,6 +90,125 @@ document.addEventListener("DOMContentLoaded", function() {
       
       // Close mobile menu if open
       closeMobileMenu();
+    }
+  }
+
+  // ========== Timeline Loading ==========
+  async function loadTimeline() {
+    // Check if Supabase config is loaded
+    if (!window.supabaseConfig) {
+      console.error('Supabase configuration not found!');
+      return;
+    }
+
+    const supabase = supabase.createClient(
+      window.supabaseConfig.supabaseUrl, 
+      window.supabaseConfig.supabaseKey
+    );
+
+    const timelineContainer = document.getElementById('timeline-container');
+    
+    try {
+      // Show loading state
+      timelineContainer.innerHTML = `
+        <div class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          <p class="mt-2 text-gray-400">Loading timeline...</p>
+        </div>
+      `;
+      
+      const { data, error } = await supabase
+        .from('timeline')
+        .select('*')
+        .order('date', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (data.length === 0) {
+        timelineContainer.innerHTML = '<p class="text-gray-400 text-center py-8">No timeline data available yet.</p>';
+        return;
+      }
+      
+      renderTimeline(data);
+    } catch (error) {
+      console.error('Error loading timeline:', error);
+      timelineContainer.innerHTML = `
+        <p class="text-red-500 text-center py-8">Error loading timeline. Please try again later.</p>
+      `;
+    }
+    
+    function renderTimeline(items) {
+      timelineContainer.innerHTML = '';
+      
+      // Create header
+      const header = document.createElement('div');
+      header.className = 'timeline-header';
+      header.innerHTML = `
+        <h2>Our Journey Timeline</h2>
+        <p>Key milestones and events that shaped our organization's growth</p>
+      `;
+      timelineContainer.appendChild(header);
+      
+      // Show first 3 items initially
+      const initialItems = items.slice(0, 3);
+      initialItems.forEach(item => createTimelineItem(item));
+      
+      // If there are more items, add "Show More" button
+      if (items.length > 3) {
+        const remainingItems = items.slice(3);
+        const showMoreBtn = document.createElement('button');
+        showMoreBtn.className = 'show-more-btn';
+        showMoreBtn.textContent = 'Show More';
+        showMoreBtn.addEventListener('click', function() {
+          remainingItems.forEach(item => createTimelineItem(item));
+          showMoreBtn.remove();
+        });
+        timelineContainer.appendChild(showMoreBtn);
+      }
+    }
+    
+    function createTimelineItem(item) {
+      const timelineItem = document.createElement('div');
+      timelineItem.className = 'timeline-item';
+      
+      const title = document.createElement('h3');
+      title.textContent = item.title;
+      
+      const date = document.createElement('div');
+      date.className = 'timeline-date';
+      date.textContent = new Date(item.date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      const description = document.createElement('p');
+      description.className = 'timeline-description';
+      description.textContent = item.description;
+      
+      const tagsContainer = document.createElement('div');
+      if (item.tags && item.tags.length > 0) {
+        item.tags.forEach(tag => {
+          const tagElement = document.createElement('span');
+          tagElement.className = 'timeline-tag';
+          tagElement.textContent = tag;
+          tagsContainer.appendChild(tagElement);
+        });
+      }
+      
+      // Add divider except for first item
+      if (timelineContainer.children.length > 1) {
+        const divider = document.createElement('div');
+        divider.className = 'timeline-divider';
+        timelineContainer.appendChild(divider);
+      }
+      
+      timelineItem.appendChild(title);
+      timelineItem.appendChild(date);
+      timelineItem.appendChild(description);
+      timelineItem.appendChild(tagsContainer);
+      
+      timelineContainer.appendChild(timelineItem);
     }
   }
 
@@ -134,113 +255,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // ========== Initialize Everything ==========
   init();
-});
-
-// ========== timeline ==========
-document.addEventListener('DOMContentLoaded', function() {
-  // Timeline data
-  const timelineData = [
-    {
-      title: "Organization Founded",
-      date: "January 2020",
-      description: "Our organization was officially established with 10 founding members.",
-      tags: ["Milestone"]
-    },
-    {
-      title: "First Major Event",
-      date: "March 2021",
-      description: "Hosted our first community conference with over 200 participants.",
-      tags: ["Event"]
-    },
-    {
-      title: "Expansion",
-      date: "August 2022",
-      description: "Opened two new regional chapters and grew to 100+ active members.",
-      tags: ["Growth", "Team"]
-    },
-    // Additional hidden items
-    {
-      title: "First Charity Event",
-      date: "November 2022",
-      description: "Organized our first charity event raising $10,000 for local community.",
-      tags: ["Event", "Charity"]
-    },
-    {
-      title: "Website Launch",
-      date: "February 2023",
-      description: "Launched our official website to reach wider audience.",
-      tags: ["Milestone"]
-    }
-  ];
-
-  const timelineContainer = document.getElementById('timeline-container');
-  
-  // Clear existing content
-  timelineContainer.innerHTML = '';
-
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'timeline-header';
-  header.innerHTML = `
-    <h2>Our Journey Timeline</h2>
-    <p>Key milestones and events that shaped our organization's growth</p>
-  `;
-  timelineContainer.appendChild(header);
-
-  // Create visible items (first 3)
-  timelineData.slice(0, 3).forEach(item => {
-    createTimelineItem(item);
-  });
-
-  // Create "Show More" button
-  const showMoreBtn = document.createElement('button');
-  showMoreBtn.className = 'show-more-btn';
-  showMoreBtn.textContent = 'Show More';
-  showMoreBtn.addEventListener('click', function() {
-    // Show remaining items
-    timelineData.slice(3).forEach(item => {
-      createTimelineItem(item);
-    });
-    // Remove the button
-    showMoreBtn.remove();
-  });
-  timelineContainer.appendChild(showMoreBtn);
-
-  function createTimelineItem(item) {
-    const timelineItem = document.createElement('div');
-    timelineItem.className = 'timeline-item';
-    
-    const title = document.createElement('h3');
-    title.textContent = item.title;
-    
-    const date = document.createElement('div');
-    date.className = 'timeline-date';
-    date.textContent = item.date;
-    
-    const description = document.createElement('p');
-    description.className = 'timeline-description';
-    description.textContent = item.description;
-    
-    const tagsContainer = document.createElement('div');
-    item.tags.forEach(tag => {
-      const tagElement = document.createElement('span');
-      tagElement.className = 'timeline-tag';
-      tagElement.textContent = tag;
-      tagsContainer.appendChild(tagElement);
-    });
-    
-    // Add divider except for first item
-    if (timelineContainer.children.length > 1) {
-      const divider = document.createElement('div');
-      divider.className = 'timeline-divider';
-      timelineContainer.appendChild(divider);
-    }
-    
-    timelineItem.appendChild(title);
-    timelineItem.appendChild(date);
-    timelineItem.appendChild(description);
-    timelineItem.appendChild(tagsContainer);
-    
-    timelineContainer.appendChild(timelineItem);
-  }
 });
