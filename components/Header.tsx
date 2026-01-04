@@ -56,7 +56,7 @@ export default function Header() {
           {/* Logo */}
           <div className="logo-container transition-all duration-300 flex-shrink-0">
             <a href="#home" onClick={closeMenu}>
-              <img src="/assets/alkhawarizmi.png" alt="logo rs" className="w-auto h-auto max-h-12" />
+              <img src="/assets/alkhawarizmi.webp" alt="logo rs" className="w-auto h-auto max-h-12" />
             </a>
           </div>
 
