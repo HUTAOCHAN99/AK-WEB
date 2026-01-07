@@ -1,4 +1,5 @@
-import { FaGithub, FaInstagram, FaLinkedin } from 'react-icons/fa'
+import { FaGithub, FaInstagram, FaLinkedin } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -8,19 +9,37 @@ export default function Footer() {
           {/* Logo */}
           <div className="mb-6 md:mb-0">
             <a href="#home">
-              <img src="/assets/alkhawarizmi.png" alt="Logo" className="h-16" />
+              <Image
+                src="/assets/alkhawarizmi.png"
+                alt="Logo Al-Khawarizmi"
+                width={64}
+                height={64}
+                className="h-16 w-auto"
+              />
             </a>
           </div>
 
           {/* Social Links */}
           <div className="flex space-x-6 mb-6 md:mb-0">
-            <a href="https://github.com/Al-Khawarizmi-UPNYK" target="_blank" className="text-gray-400 hover:text-white text-2xl transition duration-300">
+            <a
+              href="https://github.com/Al-Khawarizmi-UPNYK"
+              target="_blank"
+              className="text-gray-400 hover:text-white text-2xl transition duration-300"
+            >
               <FaGithub />
             </a>
-            <a href="https://www.instagram.com/alkhawarizmiifupnyk" target="_blank" className="text-gray-400 hover:text-white text-2xl transition duration-300">
+            <a
+              href="https://www.instagram.com/alkhawarizmiifupnyk"
+              target="_blank"
+              className="text-gray-400 hover:text-white text-2xl transition duration-300"
+            >
               <FaInstagram />
             </a>
-            <a href="https://www.linkedin.com/company/kkmi-al-khawarizmi-upnyk/" target="_blank" className="text-gray-400 hover:text-white text-2xl transition duration-300">
+            <a
+              href="https://www.linkedin.com/company/kkmi-al-khawarizmi-upnyk/"
+              target="_blank"
+              className="text-gray-400 hover:text-white text-2xl transition duration-300"
+            >
               <FaLinkedin />
             </a>
           </div>
@@ -37,5 +56,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

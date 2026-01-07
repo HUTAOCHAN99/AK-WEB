@@ -1,5 +1,14 @@
+import Image from 'next/image'
+
 export default function Benefit() {
-  const skills = ['html.svg', 'css.svg', 'javascript.svg', 'react.svg', 'nextjs.svg', 'tailwind.svg']
+  const skills = [
+    "html.svg",
+    "css.svg",
+    "javascript.svg",
+    "react.svg",
+    "nextjs.svg",
+    "tailwind.svg",
+  ];
 
   return (
     <section id="skills" className="py-16 bg-gray-800">
@@ -15,12 +24,22 @@ export default function Benefit() {
 
         <div className="flex flex-wrap justify-center gap-8 max-w-4xl mx-auto">
           {skills.map((skill, index) => (
-            <div key={index} className="bg-gray-700 p-6 rounded-lg shadow hover:shadow-lg transition duration-300">
-              <img src={`/assets/skills/${skill}`} alt={skill.replace('.svg', '')} className="h-12" />
+            <div
+              key={index}
+              className="bg-gray-700 p-6 rounded-lg shadow hover:shadow-lg transition duration-300"
+            >
+              <Image
+                src={`/assets/skills/${skill}`}
+                alt={skill.replace(".svg", "")}
+                width={48}
+                height={48}
+                className="h-12 w-auto"
+                priority={false}
+              />
             </div>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }

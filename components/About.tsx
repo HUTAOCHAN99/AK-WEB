@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function About() {
   return (
     <section id="about" className="bg-gray-800">
@@ -9,7 +11,13 @@ export default function About() {
               -- About
             </p>
             <div className="rounded-lg overflow-hidden shadow-xl">
-              <img src="/assets/B2-Alkhawarizmi.png" alt="About Al Khawarizmi" className="w-full h-auto" />
+              <Image
+                src="/assets/B2-Alkhawarizmi.webp"
+                alt="About Al Khawarizmi"
+                width={1200}
+                height={600}
+                className="w-full h-auto"
+              />
             </div>
           </div>
 
@@ -19,15 +27,17 @@ export default function About() {
               -- About
             </p>
             <p className="text-gray-300 mb-8 text-justify">
-              Hello everyone 👋, Kami adalah perkumpulan mahasiswa Islam di Informatika UPNYK, dikenal sebagai
-              Organisasi Dakwah Kampus. Kami berkiprah di tingkat jurusan Informatika dengan tujuan menyelaraskan dakwah
-              dan IPTEK. Melalui usaha kami, kami berusaha menciptakan lingkungan yang seimbang di mana nilai-nilai
-              keislaman dan ilmu pengetahuan berjalan beriringan, memberdayakan mahasiswa untuk unggul secara spiritual
-              dan akademis.
+              Hello everyone 👋, Kami adalah perkumpulan mahasiswa Islam di
+              Informatika UPNYK, dikenal sebagai Organisasi Dakwah Kampus. Kami
+              berkiprah di tingkat jurusan Informatika dengan tujuan
+              menyelaraskan dakwah dan IPTEK. Melalui usaha kami, kami berusaha
+              menciptakan lingkungan yang seimbang di mana nilai-nilai keislaman
+              dan ilmu pengetahuan berjalan beriringan, memberdayakan mahasiswa
+              untuk unggul secara spiritual dan akademis.
             </p>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

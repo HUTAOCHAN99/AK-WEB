@@ -1,5 +1,4 @@
 'use client'
-import { useEffect } from 'react'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
 import About from '../components/About'
@@ -12,8 +11,6 @@ import Timeline from '../components/Timeline'
 import ActivityComponent from '../components/Activity'
 
 export default function Home() {
-  // Hapus semua useEffect yang mengatur header
-  
   return (
     <>
       <BackToTop />
