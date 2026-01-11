@@ -1,549 +1,738 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// app/admin/dashboard/page.tsx
 'use client'
-import { useEffect, useState, useCallback } from 'react'
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { 
-  MdEdit, 
-  MdDelete,
-  MdOutlineTimeline,
-  MdAdd,
-  MdCheck,
-  MdClose,
-  MdPerson,
-  MdPendingActions,
-  MdVerified
-} from 'react-icons/md'
+
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-
-interface TimelineItem {
-  id: string;
-  title: string;
-  date: string;
-  description: string;
-  tags?: string;
-}
-
-interface PendingAdmin {
-  profile_id: number;
-  id: string;
-  full_name: string;
-  email: string;
-  status: string;
-  is_approved: boolean;
-  created_at: string;
-  reason?: string;
-}
+import { createClient } from '@supabase/supabase-js'
+import { toast } from 'react-hot-toast'
+import AdminHeader from './components/AdminHeader'
+import Sidebar from './components/Sidebar'
+import DashboardTab from './components/DashboardTab'
+import TimelineTab from './components/TimelineTab'
+import ActivitiesTab from './components/ActivitiesTab'
+import PendingAdminsTab from './components/PendingAdminsTab'
+import SettingsTab from './components/SettingsTab'
+import TimelineModal from './components/TimelineModal'
+import ActivityModal from './components/ActivityModal'
+import { Activity, TimelineItem, PendingAdmin } from './types'
 
 export default function AdminDashboard() {
-  const [timelineData, setTimelineData] = useState<TimelineItem[]>([])
-  const [pendingAdmins, setPendingAdmins] = useState<PendingAdmin[]>([])
-  const [activeTab, setActiveTab] = useState<'timeline' | 'pending'>('timeline')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
-  const [currentItem, setCurrentItem] = useState<TimelineItem | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [approving, setApproving] = useState<string>('')
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [currentUser, setCurrentUser] = useState<any>(null)
   const router = useRouter()
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
-  const checkAuthStatus = useCallback(async (client: SupabaseClient) => {
-    try {
-      const { data: { session }, error } = await client.auth.getSession()
-      if (error || !session) {
-        router.push('/admin/auth/login')
-        return
-      }
-      
-      const { data: profile } = await client
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
+  // States untuk data
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [activitiesLoading, setActivitiesLoading] = useState(false)
+  const [timelineData, setTimelineData] = useState<TimelineItem[]>([])
+  const [timelineLoading, setTimelineLoading] = useState(false)
+  const [pendingAdmins, setPendingAdmins] = useState<PendingAdmin[]>([])
+  const [pendingLoading, setPendingLoading] = useState(false)
+  const [approvingId, setApprovingId] = useState<string>('')
+  
+  // Modal states
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'timeline' | 'activities' | 'pending' | 'settings'>('dashboard')
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false)
+  const [activityModalOpen, setActivityModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
+  const [currentTimelineItem, setCurrentTimelineItem] = useState<TimelineItem | null>(null)
+  const [currentActivity, setCurrentActivity] = useState<Activity | null>(null)
+  
+  // Initialize Supabase client
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
         
-      if (!profile || profile.role !== 'admin' || !profile.is_approved || profile.status !== 'active') {
-        await client.auth.signOut()
-        router.push('/admin/auth/login')
-        return
+        if (error || !session) {
+          console.log('No session found, redirecting to login')
+          router.push('/auth/login')
+          return
+        }
+        
+        console.log('User session found:', session.user.id)
+        
+        // Get user profile
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+        
+        if (profileError) {
+          console.error('Profile error:', profileError)
+          toast.error('Failed to load profile')
+          router.push('/auth/login')
+          return
+        }
+        
+        if (!profile || !profile.is_approved) {
+          toast.error('Account not approved')
+          router.push('/auth/login')
+          return
+        }
+        
+        console.log('Profile loaded:', profile)
+        setCurrentUser(profile)
+        
+        // Load all data
+        await loadAllData()
+        
+      } catch (error) {
+        console.error('Auth error:', error)
+        toast.error('Authentication error')
+        router.push('/auth/login')
+      } finally {
+        setLoading(false)
       }
-      
-      setCurrentUser(profile)
-    } catch (error) {
-      console.error('Auth error:', error)
-      router.push('/admin/auth/login')
     }
-  }, [router])
-  
-  const loadTimelineData = useCallback(async (client: SupabaseClient) => {
+    
+    checkAuth()
+  }, [])
+
+  // Load semua data sekaligus
+  const loadAllData = async () => {
     try {
-      setLoading(true)
-      const { data, error } = await client
+      setActivitiesLoading(true)
+      setTimelineLoading(true)
+      setPendingLoading(true)
+      
+      // Load activities
+      const { data: activitiesData } = await supabase
+        .from('activities')
+        .select('*')
+        .order('order_index', { ascending: true })
+      
+      console.log('Activities loaded:', activitiesData?.length || 0)
+      setActivities(activitiesData || [])
+      
+      // Load timeline
+      const { data: timelineData } = await supabase
         .from('timeline')
         .select('*')
         .order('date', { ascending: false })
-        
-      if (error) throw error
-      setTimelineData(data || [])
-    } catch (error) {
-      console.error('Error loading timeline:', error)
-      alert('Failed to load timeline data')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-  
-  const loadPendingAdmins = useCallback(async (client: SupabaseClient) => {
-    try {
-      const { data, error } = await client
+      
+      console.log('Timeline loaded:', timelineData?.length || 0)
+      setTimelineData(timelineData || [])
+      
+      // Load pending admins
+      const { data: pendingData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'admin')
-        .eq('is_approved', false)
         .eq('status', 'pending_verification')
         .order('created_at', { ascending: true })
-        
-      if (error) throw error
-      setPendingAdmins(data || [])
-    } catch (error) {
-      console.error('Error loading pending admins:', error)
-    }
-  }, [])
-  
-  useEffect(() => {
-    const initSupabase = async () => {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing')
+      console.log('Pending admins loaded:', pendingData?.length || 0)
+      setPendingAdmins(pendingData || [])
+      
+    } catch (error) {
+      console.error('Error loading data:', error)
+      toast.error('Failed to load data')
+    } finally {
+      setActivitiesLoading(false)
+      setTimelineLoading(false)
+      setPendingLoading(false)
+    }
+  }
+
+  // Load activities
+  const loadActivities = async () => {
+    try {
+      setActivitiesLoading(true)
+      console.log('📥 Loading activities...')
+      
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .order('order_index', { ascending: true })
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('❌ Error loading activities:', error)
+        toast.error('Failed to load activities')
         return
       }
       
-      const client = createClient(supabaseUrl, supabaseKey)
-      setSupabase(client)
-      await checkAuthStatus(client)
-      await loadTimelineData(client)
-      await loadPendingAdmins(client)
+      console.log(`✅ Activities loaded: ${data?.length || 0} items`)
+      setActivities(data || [])
+    } catch (error) {
+      console.error('❌ Error loading activities:', error)
+      toast.error('Failed to load activities')
+    } finally {
+      setActivitiesLoading(false)
     }
-    
-    initSupabase()
-  }, [checkAuthStatus, loadTimelineData, loadPendingAdmins])
-  
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!supabase) return
-    
-    const formData = new FormData(e.currentTarget)
-    const title = formData.get('title') as string
-    const date = formData.get('date') as string
-    const description = formData.get('description') as string
-    const tags = formData.get('tags') as string
-    const id = formData.get('id') as string
-    
-    if (!title || !date || !description) {
-      alert('Harap isi semua field yang wajib')
-      return
+  }
+
+  // Load timeline
+  const loadTimeline = async () => {
+    try {
+      setTimelineLoading(true)
+      console.log('Loading timeline...')
+      
+      const { data, error } = await supabase
+        .from('timeline')
+        .select('*')
+        .order('date', { ascending: false })
+      
+      if (error) {
+        console.error('Error loading timeline:', error)
+        toast.error('Failed to load timeline')
+        return
+      }
+      
+      console.log('Timeline loaded:', data?.length || 0)
+      setTimelineData(data || [])
+    } catch (error) {
+      console.error('Error loading timeline:', error)
+      toast.error('Failed to load timeline')
+    } finally {
+      setTimelineLoading(false)
     }
+  }
+
+  // Load pending admins
+  const loadPendingAdmins = async () => {
+    try {
+      setPendingLoading(true)
+      console.log('Loading pending admins...')
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('status', 'pending_verification')
+        .order('created_at', { ascending: true })
+      
+      if (error) {
+        console.error('Error loading pending admins:', error)
+        toast.error('Failed to load pending admins')
+        return
+      }
+      
+      console.log('Pending admins loaded:', data?.length || 0)
+      setPendingAdmins(data || [])
+    } catch (error) {
+      console.error('Error loading pending admins:', error)
+      toast.error('Failed to load pending admins')
+    } finally {
+      setPendingLoading(false)
+    }
+  }
+
+  // Upload image ke Supabase Storage
+  const uploadToSupabaseStorage = async (file: File): Promise<string> => {
+    console.log('🔍 Starting image upload...')
     
     try {
-      let error
-      if (id) {
-        const { error: updateError } = await supabase
-          .from('timeline')
-          .update({ title, date, description, tags })
-          .eq('id', id)
-        error = updateError
-      } else {
-        const { error: insertError } = await supabase
-          .from('timeline')
-          .insert([{ title, date, description, tags }])
-        error = insertError
+      // Generate filename
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const timestamp = Date.now()
+      const randomStr = Math.random().toString(36).substring(7)
+      const fileName = `activity-${timestamp}-${randomStr}.${fileExt}`
+      
+      console.log('📄 File details:', {
+        originalName: file.name,
+        newName: fileName,
+        type: file.type,
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        extension: fileExt
+      })
+      
+      // Upload ke storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('activities')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type
+        })
+      
+      if (uploadError) {
+        console.error('❌ Upload failed:', uploadError)
+        throw new Error(`Upload failed: ${uploadError.message}`)
       }
+      
+      console.log('✅ Upload successful:', uploadData)
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('activities')
+        .getPublicUrl(uploadData?.path || fileName)
+      
+      console.log('🔗 Public URL:', publicUrl)
+      return publicUrl
+      
+    } catch (error: any) {
+      console.error('💥 Upload error:', error)
+      throw error
+    }
+  }
+
+  // Helper function untuk save ke database
+  const saveActivityToDatabase = async (formData: FormData, imageUrl: string) => {
+    // Validasi bahwa imageUrl adalah URL
+    if (imageUrl && imageUrl.startsWith('data:')) {
+      throw new Error('Image must be uploaded to storage, not saved as base64 data')
+    }
+    
+    const activityData = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      category: formData.get('category') as string || null,
+      status: formData.get('status') as 'active' | 'inactive',
+      order_index: parseInt(formData.get('order_index') as string) || 0,
+      image_url: imageUrl || null,
+      image_storage_path: imageUrl ? imageUrl.split('/').pop() : null,
+      icon_type: 'image'
+    }
+    
+    console.log('💾 Saving to database:', {
+      ...activityData,
+      image_url_preview: activityData.image_url?.substring(0, 100) + '...'
+    })
+    
+    let result
+    const now = new Date().toISOString()
+    
+    if (modalMode === 'add') {
+      result = await supabase
+        .from('activities')
+        .insert([{
+          ...activityData,
+          created_by: currentUser?.id,
+          created_at: now,
+          updated_at: now
+        }])
+        .select()
+        .single()
+    } else {
+      const id = formData.get('id') as string
+      result = await supabase
+        .from('activities')
+        .update({
+          ...activityData,
+          updated_by: currentUser?.id,
+          updated_at: now
+        })
+        .eq('id', id)
+        .select()
+        .single()
+    }
+    
+    if (result.error) {
+      console.error('❌ Database error:', result.error)
+      throw result.error
+    }
+    
+    console.log('✅ Database success:', result.data)
+    return result.data
+  }
+
+  // Handle activity form submission
+  const handleActivitySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    try {
+      setUploading(true)
+      console.log('📝 === ACTIVITY FORM SUBMISSION START ===')
+      
+      const formData = new FormData(e.currentTarget)
+      
+      // Get image file
+      const imageFile = formData.get('image_file') as File
+      
+      // VALIDATION: Must have image for new activity
+      if (modalMode === 'add' && (!imageFile || imageFile.size === 0)) {
+        toast.error('⚠️ Please upload an image for new activity')
+        setUploading(false)
+        return
+      }
+      
+      let imageUrl = currentActivity?.image_url || ''
+      
+      // Only upload new image if file exists
+      if (imageFile && imageFile.size > 0) {
+        console.log('📤 Starting image upload...')
+        
+        try {
+          // Upload to Supabase Storage
+          imageUrl = await uploadToSupabaseStorage(imageFile)
+          console.log('✅ Image uploaded successfully:', imageUrl)
+          
+          // Add timestamp for cache busting
+          if (imageUrl && !imageUrl.includes('?')) {
+            imageUrl = `${imageUrl}?t=${Date.now()}`
+            console.log('🕐 Added cache busting timestamp')
+          }
+          
+        } catch (uploadError: any) {
+          console.error('❌ IMAGE UPLOAD FAILED:', uploadError)
+          toast.error(`❌ Failed to upload image: ${uploadError.message}`)
+          setUploading(false)
+          return
+        }
+      } else if (modalMode === 'edit' && currentActivity?.image_url) {
+        // Keep existing image for edit mode
+        imageUrl = currentActivity.image_url
+        console.log('🔄 Using existing image URL:', imageUrl)
+      }
+      
+      // Validasi final URL format
+      if (imageUrl && imageUrl.startsWith('data:')) {
+        console.error('❌ INVALID: Image is base64 format, not URL')
+        toast.error('❌ Invalid image format. Please upload image to storage.')
+        setUploading(false)
+        return
+      }
+      
+      // Simpan ke database
+      await saveActivityToDatabase(formData, imageUrl)
+      
+      toast.success(
+        modalMode === 'add' 
+          ? '✅ Activity added successfully!' 
+          : '✅ Activity updated successfully!'
+      )
+      
+      // Refresh activities
+      await loadActivities()
+      
+      // Close modal
+      setActivityModalOpen(false)
+      setCurrentActivity(null)
+      
+      console.log('✅ === ACTIVITY FORM SUBMISSION END ===')
+      
+    } catch (error: any) {
+      console.error('💥 Submission error:', error)
+      toast.error(`❌ Error: ${error.message || 'Something went wrong'}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Handle timeline form submission
+  const handleTimelineSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    try {
+      setUploading(true)
+      const formData = new FormData(e.currentTarget)
+      
+      const timelineData = {
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        date: formData.get('date') as string,
+        tags: formData.get('tags') as string || null,
+      }
+      
+      let result
+      if (modalMode === 'add') {
+        result = await supabase
+          .from('timeline')
+          .insert([timelineData])
+          .select()
+          .single()
+      } else {
+        const id = formData.get('id') as string
+        result = await supabase
+          .from('timeline')
+          .update(timelineData)
+          .eq('id', id)
+          .select()
+          .single()
+      }
+      
+      if (result.error) throw result.error
+      
+      toast.success(
+        modalMode === 'add' 
+          ? 'Timeline item added!' 
+          : 'Timeline item updated!'
+      )
+      
+      await loadTimeline()
+      setTimelineModalOpen(false)
+      setCurrentTimelineItem(null)
+      
+    } catch (error: any) {
+      console.error('Error:', error)
+      toast.error(`Error: ${error.message}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Handle delete activity
+  const handleDeleteActivity = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this activity?')) return
+    
+    try {
+      console.log('🗑️ Deleting activity:', id)
+      const { error } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', id)
       
       if (error) throw error
       
-      alert(`Item timeline berhasil ${id ? 'diperbarui' : 'ditambahkan'}`)
-      setIsModalOpen(false)
-      loadTimelineData(supabase)
-    } catch (error) {
-      console.error('Error saving timeline:', error)
-      alert('Gagal menyimpan item timeline')
+      toast.success('✅ Activity deleted successfully!')
+      await loadActivities()
+    } catch (error: any) {
+      console.error('Error deleting activity:', error)
+      toast.error(`❌ Error: ${error.message}`)
     }
   }
-  
-  const handleDelete = async (id: string) => {
-    if (!supabase) return
-    if (!confirm('Apakah Anda yakin ingin menghapus item timeline ini?')) return
+
+  // Handle delete timeline item
+  const handleDeleteTimeline = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this timeline item?')) return
     
     try {
       const { error } = await supabase
         .from('timeline')
         .delete()
         .eq('id', id)
-        
+      
       if (error) throw error
       
-      alert('Item timeline berhasil dihapus')
-      loadTimelineData(supabase)
-    } catch (error) {
+      toast.success('Timeline item deleted!')
+      await loadTimeline()
+    } catch (error: any) {
       console.error('Error deleting timeline:', error)
-      alert('Gagal menghapus item timeline')
+      toast.error(`Error: ${error.message}`)
     }
   }
-  
+
+  // Handle approve admin
   const handleApproveAdmin = async (profileId: number, adminId: string) => {
-    if (!supabase || !currentUser) return
-    
-    if (!confirm('Apakah Anda yakin ingin menyetujui admin ini?')) return
-    
-    setApproving(adminId)
-    
     try {
-      // Update profile to approved
+      setApprovingId(adminId)
+      
       const { error } = await supabase
         .from('profiles')
         .update({
+          status: 'approved',
           is_approved: true,
-          status: 'active',
-          approved_by: currentUser.id,
+          approved_by: currentUser?.id,
           approved_at: new Date().toISOString()
         })
         .eq('profile_id', profileId)
-        .eq('id', adminId)
       
       if (error) throw error
       
-      // Reload pending admins
-      await loadPendingAdmins(supabase)
-      alert('Admin berhasil disetujui')
-    } catch (error) {
+      toast.success('Admin approved successfully!')
+      await loadPendingAdmins()
+    } catch (error: any) {
       console.error('Error approving admin:', error)
-      alert('Gagal menyetujui admin')
+      toast.error(`Error: ${error.message}`)
     } finally {
-      setApproving('')
+      setApprovingId('')
     }
   }
-  
+
+  // Handle reject admin
   const handleRejectAdmin = async (profileId: number, adminId: string) => {
-    if (!supabase) return
-    
-    if (!confirm('Apakah Anda yakin ingin menolak admin ini?')) return
-    
-    setApproving(adminId)
+    if (!confirm('Are you sure you want to reject this admin?')) return
     
     try {
+      setApprovingId(adminId)
+      
       const { error } = await supabase
         .from('profiles')
         .update({
           status: 'rejected',
+          is_approved: false,
           rejected_at: new Date().toISOString()
         })
         .eq('profile_id', profileId)
-        .eq('id', adminId)
       
       if (error) throw error
       
-      await loadPendingAdmins(supabase)
-      alert('Admin berhasil ditolak')
-    } catch (error) {
+      toast.success('Admin rejected!')
+      await loadPendingAdmins()
+    } catch (error: any) {
       console.error('Error rejecting admin:', error)
-      alert('Gagal menolak admin')
+      toast.error(`Error: ${error.message}`)
     } finally {
-      setApproving('')
+      setApprovingId('')
     }
   }
-  
-  const openModal = (mode: 'add' | 'edit', item: TimelineItem | null = null) => {
+
+  // Open activity modal
+  const openActivityModal = (mode: 'add' | 'edit', activity?: Activity) => {
+    console.log('📱 Opening activity modal:', { mode, activity })
     setModalMode(mode)
-    setCurrentItem(item)
-    setIsModalOpen(true)
+    setCurrentActivity(activity || null)
+    setActivityModalOpen(true)
   }
-  
+
+  // Open timeline modal
+  const openTimelineModal = (mode: 'add' | 'edit', item?: TimelineItem) => {
+    setModalMode(mode)
+    setCurrentTimelineItem(item || null)
+    setTimelineModalOpen(true)
+  }
+
+  // Load data when tab changes
+  useEffect(() => {
+    if (!currentUser) return
+    
+    if (activeTab === 'timeline' && timelineData.length === 0) {
+      loadTimeline()
+    } else if (activeTab === 'pending' && pendingAdmins.length === 0) {
+      loadPendingAdmins()
+    } else if (activeTab === 'activities' && activities.length === 0) {
+      loadActivities()
+    }
+  }, [activeTab, currentUser])
+
+  // Handle logout
   const handleLogout = async () => {
-    if (supabase) {
+    try {
       await supabase.auth.signOut()
-      router.push('/admin/auth/login')
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Logout failed')
     }
   }
-  
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <div className="container mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-gray-400">
-              {currentUser?.full_name ? `Halo, ${currentUser.full_name}` : 'Loading...'}
-            </p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded flex items-center gap-2 transition duration-300"
-          >
-            <span>Logout</span>
-          </button>
+
+  // Handle save settings
+  const handleSaveSettings = async (settings: any) => {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.log('Settings saved:', settings)
+        resolve()
+      }, 1000)
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p className="mt-4 text-gray-400">Loading admin dashboard...</p>
         </div>
-        
-        {/* Tabs */}
-        <div className="flex border-b border-gray-700 mb-6">
-          <button
-            onClick={() => setActiveTab('timeline')}
-            className={`px-4 py-2 font-medium transition duration-300 ${
-              activeTab === 'timeline' 
-                ? 'text-primary border-b-2 border-primary' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Timeline Management
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 font-medium transition duration-300 relative ${
-              activeTab === 'pending' 
-                ? 'text-primary border-b-2 border-primary' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Pending Admins
-            {pendingAdmins.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {pendingAdmins.length}
-              </span>
-            )}
-          </button>
-        </div>
-        
-        {/* Timeline Tab */}
-        {activeTab === 'timeline' && (
-          <>
-            <div className="mb-6">
-              <button
-                onClick={() => openModal('add')}
-                className="bg-primary hover:bg-primary-dark px-4 py-2 rounded flex items-center gap-2 transition duration-300"
-              >
-                <MdAdd className="w-5 h-5" />
-                <span>Add Timeline Item</span>
-              </button>
-            </div>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                <p className="mt-2 text-gray-400">Loading timeline...</p>
-              </div>
-            ) : timelineData.length === 0 ? (
-              <div className="text-center py-8">
-                <MdOutlineTimeline className="text-4xl text-gray-500 mx-auto mb-4" />
-                <p className="mt-2 text-gray-400">No timeline items found.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {timelineData.map((item) => (
-                  <div key={item.id} className="bg-gray-700 p-4 rounded-lg hover:bg-gray-650 transition duration-300">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-semibold">{item.title}</h3>
-                        <p className="text-gray-400">{new Date(item.date).toLocaleDateString()}</p>
-                        <p className="mt-2">{item.description}</p>
-                        {item.tags && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {item.tags.split(',').map((tag: string, index: number) => (
-                              <span key={index} className="bg-blue-600 text-xs px-2 py-1 rounded">
-                                {tag.trim()}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => openModal('edit', item)}
-                          className="text-blue-400 hover:text-blue-300 p-1 transition duration-300"
-                          title="Edit"
-                        >
-                          <MdEdit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-400 hover:text-red-300 p-1 transition duration-300"
-                          title="Delete"
-                        >
-                          <MdDelete className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-        
-        {/* Pending Admins Tab */}
-        {activeTab === 'pending' && (
-          <div>
-            <div className="mb-6">
-              <div className="flex items-center gap-2 text-gray-300 mb-2">
-                <MdPendingActions className="w-5 h-5" />
-                <h2 className="text-xl font-semibold">Admin Menunggu Persetujuan</h2>
-              </div>
-              <p className="text-gray-400">Verifikasi dan setujui permintaan admin baru</p>
-            </div>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                <p className="mt-2 text-gray-400">Loading pending admins...</p>
-              </div>
-            ) : pendingAdmins.length === 0 ? (
-              <div className="text-center py-8">
-                <MdVerified className="text-4xl text-green-500 mx-auto mb-4" />
-                <p className="mt-2 text-gray-400">Tidak ada admin yang menunggu persetujuan.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {pendingAdmins.map((admin) => (
-                  <div key={admin.id} className="bg-gray-700 p-6 rounded-lg hover:bg-gray-650 transition duration-300">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="bg-primary/20 p-2 rounded-full">
-                            <MdPerson className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold">{admin.full_name}</h3>
-                            <p className="text-gray-400 text-sm">{admin.email}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm text-gray-400 mb-1">Alasan Bergabung:</p>
-                            <p className="text-gray-300 bg-gray-800 p-3 rounded">{admin.reason || 'Tidak ada alasan yang diberikan'}</p>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-400">Status:</span>
-                              <span className="ml-2 px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">
-                                {admin.status}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-400">Daftar:</span>
-                              <span className="ml-2 text-gray-300">
-                                {new Date(admin.created_at).toLocaleDateString('id-ID')}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <button
-                          onClick={() => handleApproveAdmin(admin.profile_id, admin.id)}
-                          disabled={approving === admin.id}
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition duration-300 disabled:opacity-50"
-                        >
-                          {approving === admin.id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                              <span>Processing...</span>
-                            </>
-                          ) : (
-                            <>
-                              <MdCheck className="w-5 h-5" />
-                              <span>Setujui</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleRejectAdmin(admin.profile_id, admin.id)}
-                          disabled={approving === admin.id}
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition duration-300 disabled:opacity-50"
-                        >
-                          <MdClose className="w-5 h-5" />
-                          <span>Tolak</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Modal untuk Timeline */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4">
-                {modalMode === 'add' ? 'Add Timeline Item' : 'Edit Timeline Item'}
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <input type="hidden" name="id" defaultValue={currentItem?.id || ''} />
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm mb-1">Title *</label>
-                    <input
-                      type="text"
-                      name="title"
-                      defaultValue={currentItem?.title || ''}
-                      className="w-full bg-gray-700 border border-gray-600 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-1">Date *</label>
-                    <input
-                      type="date"
-                      name="date"
-                      defaultValue={currentItem?.date || ''}
-                      className="w-full bg-gray-700 border border-gray-600 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-1">Description *</label>
-                    <textarea
-                      name="description"
-                      defaultValue={currentItem?.description || ''}
-                      className="w-full bg-gray-700 border border-gray-600 rounded p-2 h-32 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-1">Tags (comma separated)</label>
-                    <input
-                      type="text"
-                      name="tags"
-                      defaultValue={currentItem?.tags || ''}
-                      className="w-full bg-gray-700 border border-gray-600 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition duration-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary hover:bg-primary-dark rounded transition duration-300"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex">
+      {/* Sidebar */}
+      <Sidebar
+        currentUser={currentUser}
+        activeTab={activeTab}
+        pendingCount={pendingAdmins.length}
+        onTabChange={setActiveTab}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-4 md:p-6">
+          <AdminHeader 
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            sidebarOpen={sidebarOpen}
+          />
+          
+          <div className="mt-6">
+            {/* Dashboard Tab */}
+            {activeTab === 'dashboard' && (
+              <DashboardTab 
+                activities={activities}
+                timelineData={timelineData}
+                pendingAdmins={pendingAdmins}
+                onOpenActivityModal={() => {
+                  setActiveTab('activities')
+                  setTimeout(() => openActivityModal('add'), 100)
+                }}
+                onOpenTimelineModal={() => {
+                  setActiveTab('timeline')
+                  setTimeout(() => openTimelineModal('add'), 100)
+                }}
+                onOpenPendingModal={() => setActiveTab('pending')}
+              />
+            )}
+            
+            {/* Activities Tab */}
+            {activeTab === 'activities' && (
+              <ActivitiesTab 
+                activities={activities}
+                loading={activitiesLoading}
+                onOpenModal={openActivityModal}
+                onDelete={handleDeleteActivity}
+              />
+            )}
+            
+            {/* Timeline Tab */}
+            {activeTab === 'timeline' && (
+              <TimelineTab 
+                timelineData={timelineData}
+                loading={timelineLoading}
+                onOpenModal={openTimelineModal}
+                onDelete={handleDeleteTimeline}
+              />
+            )}
+            
+            {/* Pending Admins Tab */}
+            {activeTab === 'pending' && (
+              <PendingAdminsTab 
+                pendingAdmins={pendingAdmins}
+                loading={pendingLoading}
+                approving={approvingId}
+                onApprove={handleApproveAdmin}
+                onReject={handleRejectAdmin}
+              />
+            )}
+            
+            {/* Settings Tab */}
+            {activeTab === 'settings' && (
+              <SettingsTab 
+                currentUser={currentUser}
+                onSaveSettings={handleSaveSettings}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Modals */}
+      <TimelineModal 
+        isOpen={timelineModalOpen}
+        mode={modalMode}
+        currentItem={currentTimelineItem}
+        onClose={() => {
+          setTimelineModalOpen(false)
+          setCurrentTimelineItem(null)
+        }}
+        onSubmit={handleTimelineSubmit}
+      />
+      
+      <ActivityModal 
+        isOpen={activityModalOpen}
+        mode={modalMode}
+        currentActivity={currentActivity}
+        uploading={uploading}
+        onClose={() => {
+          setActivityModalOpen(false)
+          setCurrentActivity(null)
+        }}
+        onSubmit={handleActivitySubmit}
+      />
     </div>
   )
 }

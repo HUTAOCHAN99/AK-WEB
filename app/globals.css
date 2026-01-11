@@ -102,3 +102,13 @@
     width: 3.5rem !important;
   }
 }
+
+/* Untuk smooth transition */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Untuk mencegah scroll pada body saat sidebar terbuka di mobile */
+body.sidebar-open {
+  overflow: hidden;
+}
