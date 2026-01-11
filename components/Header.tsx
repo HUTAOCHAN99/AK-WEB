@@ -1,10 +1,92 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
-import Image from 'next/image'
+import Image from 'next/image';
+
+// Custom hook untuk mengelola mobile menu
+const useMobileMenu = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  
+  const openMenu = () => {
+    // Simpan posisi scroll saat ini
+    setScrollPosition(window.pageYOffset);
+    setIsMenuOpen(true);
+    document.body.classList.add("overflow-hidden");
+    
+    // Lock scroll position
+    document.body.style.top = `-${window.pageYOffset}px`;
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+  };
+  
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    document.body.classList.remove("overflow-hidden");
+    
+    // Restore scroll position
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, scrollPosition);
+    
+    // Reset hamburger button state
+    const hamburgerBtn = document.getElementById('humberger');
+    if (hamburgerBtn) {
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+    }
+  };
+  
+  const toggleMenu = () => {
+    if (isMenuOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  };
+  
+  const handleMenuLinkClick = (href: string) => {
+    closeMenu();
+    
+    // Delay untuk memastikan menu tertutup sebelum scroll
+    setTimeout(() => {
+      if (href.startsWith('#')) {
+        const element = document.querySelector(href);
+        if (element) {
+          const headerHeight = 80; // Sesuaikan dengan tinggi header
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      } else {
+        window.location.href = href;
+      }
+    }, 300);
+  };
+  
+  return {
+    isMenuOpen,
+    openMenu,
+    closeMenu,
+    toggleMenu,
+    handleMenuLinkClick,
+    menuRef
+  };
+};
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { 
+    isMenuOpen, 
+    toggleMenu, 
+    closeMenu, 
+    handleMenuLinkClick,
+    menuRef
+  } = useMobileMenu();
 
   // Handle scroll untuk header
   useEffect(() => {
@@ -21,6 +103,8 @@ export default function Header() {
       }
     };
 
+    // Inisialisasi state header
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
 
     // Cleanup
@@ -29,26 +113,30 @@ export default function Header() {
     };
   }, []);
 
-  // Toggle mobile menu
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-    if (!isMenuOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-  };
+  // Navigation items dengan href yang sesuai
+  const navItems = [
+    { name: "Home", href: "#home" },
+    { name: "About", href: "#about" },
+    { name: "Divisi", href: "#services" },
+    { name: "Benefit & Kerjasama", href: "#skills" },
+    { name: "Kegiatan", href: "#project" },
+    { name: "Kontak", href: "#contact" },
+  ];
 
-  // Close mobile menu
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-    document.body.classList.remove("overflow-hidden");
-  };
+  // Handle escape key untuk menutup menu
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMenuOpen) {
+        closeMenu();
+      }
+    };
 
-  // Handle link clicks
-  const handleLinkClick = () => {
-    closeMenu();
-  };
+    document.addEventListener('keydown', handleEscapeKey);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isMenuOpen, closeMenu]);
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 header-top bg-gray-900/90 backdrop-blur-sm">
@@ -56,38 +144,40 @@ export default function Header() {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <div className="logo-container transition-all duration-300 shrink-0">
-            <a href="#home" onClick={closeMenu}>
+            <a 
+              href="#home" 
+              onClick={(e) => {
+                e.preventDefault();
+                handleMenuLinkClick("#home");
+              }}
+              className="focus:outline-none focus:ring-2 focus:ring-primary rounded"
+            >
               <Image
                 src="/assets/alkhawarizmi.webp"
                 alt="Logo RS Alkhawarizmi"
                 width={160}
                 height={48}
                 className="w-auto h-auto max-h-12"
+                priority
               />
             </a>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:block grow mx-8">
+          <nav className="hidden lg:block grow mx-8" aria-label="Main navigation">
             <ul className="flex justify-center space-x-8">
-              {[
-                "Home",
-                "About",
-                "Divisi",
-                "Benefit & Kerjasama",
-                "Kegiatan",
-                "Kontak",
-              ].map((item) => (
-                <li key={item} className="group">
+              {navItems.map((item) => (
+                <li key={item.name} className="group">
                   <a
-                    href={`#${item
-                      .toLowerCase()
-                      .replace(/ & /g, "-")
-                      .replace(/\s+/g, "-")}`}
-                    className="text-gray-300 hover:text-white font-medium py-2 relative transition duration-300"
-                    onClick={closeMenu}
+                    href={item.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleMenuLinkClick(item.href);
+                    }}
+                    className="text-gray-300 hover:text-white font-medium py-2 relative transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 rounded px-2"
+                    aria-label={`Navigate to ${item.name}`}
                   >
-                    {item}
+                    {item.name}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                   </a>
                 </li>
@@ -100,9 +190,10 @@ export default function Header() {
             <button
               id="humberger"
               onClick={toggleMenu}
-              className="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary z-1000 transition duration-300"
+              className="p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary z-[100] transition duration-300 hover:bg-gray-800"
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
+              aria-controls="nav-menu"
             >
               {isMenuOpen ? (
                 <FiX className="w-6 h-6 text-white" />
@@ -117,25 +208,37 @@ export default function Header() {
       {/* Mobile Navigation Overlay */}
       <div
         id="overlay"
-        className={`overlay fixed inset-0 bg-black/70 z-40 transition-opacity duration-300 lg:hidden ${
+        className={`overlay fixed inset-0 bg-black/70 z-[90] transition-opacity duration-300 lg:hidden ${
           isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={closeMenu}
+        aria-hidden={!isMenuOpen}
+        style={{ 
+          top: isMenuOpen ? `${window.pageYOffset}px` : '0',
+          height: isMenuOpen ? `calc(100vh + ${window.pageYOffset}px)` : '100vh'
+        }}
       ></div>
 
       {/* Mobile Navigation Menu */}
       <nav
         id="nav-menu"
-        className={`lg:hidden fixed top-0 right-0 h-full w-3/4 max-w-sm bg-gray-900 z-50 shadow-2xl transition-transform duration-300 ease-in-out ${
+        ref={menuRef}
+        className={`lg:hidden fixed right-0 h-full w-3/4 max-w-sm bg-gray-900 z-[100] shadow-2xl transition-transform duration-300 ease-in-out transform ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        aria-label="Mobile navigation"
+        aria-hidden={!isMenuOpen}
+        style={{ 
+          top: isMenuOpen ? `${window.pageYOffset}px` : '0',
+          height: isMenuOpen ? `calc(100vh - ${window.pageYOffset}px)` : '100vh'
+        }}
       >
         <div className="container mx-auto px-4 py-8 h-full overflow-y-auto">
           <div className="flex justify-end mb-8">
             <button
               id="close-menu"
               onClick={closeMenu}
-              className="text-white text-2xl p-2 hover:bg-gray-800 rounded-lg transition duration-300"
+              className="text-white text-2xl p-2 hover:bg-gray-800 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary"
               aria-label="Close menu"
             >
               <FiX className="w-6 h-6" />
@@ -143,24 +246,18 @@ export default function Header() {
           </div>
 
           <ul className="space-y-4">
-            {[
-              "Home",
-              "About",
-              "Divisi",
-              "Benefit & Kerjasama",
-              "Kegiatan",
-              "Kontak",
-            ].map((item) => (
-              <li key={item}>
+            {navItems.map((item) => (
+              <li key={item.name}>
                 <a
-                  href={`#${item
-                    .toLowerCase()
-                    .replace(/ & /g, "-")
-                    .replace(/\s+/g, "-")}`}
-                  onClick={handleLinkClick}
-                  className="block py-3 px-4 rounded-lg text-white hover:bg-gray-800 transition duration-300 text-lg font-medium border-l-4 border-transparent hover:border-primary"
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleMenuLinkClick(item.href);
+                  }}
+                  className="block py-3 px-4 rounded-lg text-white hover:bg-gray-800 transition duration-300 text-lg font-medium border-l-4 border-transparent hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
+                  aria-label={`Navigate to ${item.name}`}
                 >
-                  {item}
+                  {item.name}
                 </a>
               </li>
             ))}
@@ -173,7 +270,9 @@ export default function Header() {
                   <a
                     href="https://github.com/Al-Khawarizmi-UPNYK"
                     target="_blank"
-                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                    aria-label="Visit our GitHub"
                   >
                     <svg
                       className="w-6 h-6"
@@ -186,7 +285,9 @@ export default function Header() {
                   <a
                     href="https://www.instagram.com/alkhawarizmiifupnyk"
                     target="_blank"
-                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                    aria-label="Visit our Instagram"
                   >
                     <svg
                       className="w-6 h-6"
@@ -199,7 +300,9 @@ export default function Header() {
                   <a
                     href="https://www.linkedin.com/company/kkmi-al-khawarizmi-upnyk/"
                     target="_blank"
-                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                    aria-label="Visit our LinkedIn"
                   >
                     <svg
                       className="w-6 h-6"
@@ -218,8 +321,12 @@ export default function Header() {
           <div className="absolute bottom-8 left-0 right-0 px-4">
             <a
               href="#contact"
-              onClick={handleLinkClick}
-              className="block w-full bg-primary hover:bg-primary-dark text-white text-center font-medium py-3 px-6 rounded-lg shadow hover:shadow-md transition duration-300"
+              onClick={(e) => {
+                e.preventDefault();
+                handleMenuLinkClick("#contact");
+              }}
+              className="block w-full bg-primary hover:bg-primary-dark text-white text-center font-medium py-3 px-6 rounded-lg shadow hover:shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
+              aria-label="Join now by contacting us"
             >
               Join Now
             </a>
