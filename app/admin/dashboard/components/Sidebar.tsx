@@ -7,6 +7,7 @@ import {
   MdPeopleAlt, 
   MdDashboard, 
   MdSettings,
+  MdAdminPanelSettings,
   MdClose
 } from 'react-icons/md'
 
@@ -17,7 +18,7 @@ interface UserProfile {
   role?: string;
 }
 
-type TabType = 'dashboard' | 'timeline' | 'activities' | 'pending' | 'settings';
+type TabType = 'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings';
 
 interface SidebarProps {
   currentUser: UserProfile | null;
@@ -50,6 +51,11 @@ export default function Sidebar({
       label: 'Pending Admins', 
       icon: <MdPeopleAlt className="w-5 h-5" />,
       badge: pendingCount 
+    },
+    { 
+      id: 'admin-management', 
+      label: 'Admin Management', 
+      icon: <MdAdminPanelSettings className="w-5 h-5" /> 
     },
     { id: 'settings', label: 'Settings', icon: <MdSettings className="w-5 h-5" /> },
   ]
@@ -102,7 +108,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Menu Items - FIX: Hapus badge duplikat */}
+        {/* Menu Items */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <button
@@ -132,7 +138,6 @@ export default function Sidebar({
             >
               <div className="shrink-0">
                 {item.icon}
-                {/* HAPUS BADGE DI SINI */}
               </div>
               <span className="font-medium flex-1 text-left">{item.label}</span>
               {/* HANYA TAMPILKAN SATU BADGE DI SINI */}

@@ -49,7 +49,7 @@ export default function AdminHeader({
       <div className="flex items-center gap-4">
         {/* User Info */}
         <div className="text-right hidden sm:block">
-          <p className="text-sm font-medium truncate max-w-[200px]">
+          <p className="text-sm font-medium truncate max-w-50">
             {currentUser?.email}
           </p>
           <p className="text-xs text-gray-400">

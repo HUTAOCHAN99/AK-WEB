@@ -194,7 +194,7 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <Image
-                src="/assets/alkhawarizmi.png"
+                src="/assets/alkhawarizmi.webp"
                 alt="Logo"
                 width={80}
                 height={80}
@@ -387,35 +387,6 @@ export default function RegisterPage() {
             )}
           </div>
         </div>
-        
-        {/* Registration Information */}
-        {!success && (
-          <div className="mt-6 text-center">
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-300 mb-2">📋 Informasi Registrasi</h3>
-              <ul className="text-xs text-gray-400 space-y-1">
-                <li className="flex items-start">
-                  <svg className="w-3 h-3 mr-2 text-primary mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Akun akan diverifikasi oleh Admin Ketua</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-3 h-3 mr-2 text-primary mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Anda bisa login setelah akun disetujui</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-3 h-3 mr-2 text-primary mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Proses verifikasi maksimal 2x24 jam</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

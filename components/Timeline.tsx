@@ -168,12 +168,6 @@ export default function Timeline() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="/admin/auth"
-                className="inline-flex items-center justify-center px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition duration-300"
-              >
-                Go to Admin Dashboard
-              </a>
-              <a
                 href="#contact"
                 className="inline-flex items-center justify-center px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg border border-gray-600 transition duration-300"
               >

@@ -35,7 +35,6 @@ export default function PendingAdminsTab({
         </div>
       ) : pendingAdmins.length === 0 ? (
         <div className="text-center py-8">
-          <MdVerified className="text-4xl text-green-500 mx-auto mb-4" />
           <p className="mt-2 text-gray-400">Tidak ada admin yang menunggu persetujuan.</p>
         </div>
       ) : (

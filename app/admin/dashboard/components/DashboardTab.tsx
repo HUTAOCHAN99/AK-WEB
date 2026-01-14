@@ -12,26 +12,32 @@ import {
   MdAdd,
   MdCalendarToday,
   MdCheckCircle,
-  MdWarning
+  MdWarning,
+  MdAdminPanelSettings,
+  MdSupervisorAccount
 } from 'react-icons/md'
-import { Activity, TimelineItem, PendingAdmin } from '../types'
+import { Activity, TimelineItem, PendingAdmin, AdminUser } from '../types'
 
 interface DashboardTabProps {
   activities: Activity[];
   timelineData: TimelineItem[];
   pendingAdmins: PendingAdmin[];
+  adminUsers: AdminUser[];
   onOpenActivityModal: () => void;
   onOpenTimelineModal: () => void;
   onOpenPendingModal: () => void;
+  onOpenAdminManagementModal: () => void;
 }
 
 export default function DashboardTab({
   activities,
   timelineData,
   pendingAdmins,
+  adminUsers,
   onOpenActivityModal,
   onOpenTimelineModal,
-  onOpenPendingModal
+  onOpenPendingModal,
+  onOpenAdminManagementModal
 }: DashboardTabProps) {
   const stats = [
     {
@@ -69,6 +75,24 @@ export default function DashboardTab({
       change: pendingAdmins.length > 0 ? 'Needs attention' : 'All clear',
       trend: pendingAdmins.length > 0 ? 'down' : 'up',
       onClick: onOpenPendingModal
+    },
+    {
+      title: 'Active Admins',
+      value: adminUsers.filter(a => a.status === 'active').length,
+      icon: <MdAdminPanelSettings className="w-6 h-6" />,
+      color: 'bg-indigo-500',
+      change: '+2',
+      trend: 'up',
+      onClick: onOpenAdminManagementModal
+    },
+    {
+      title: 'Super Admins',
+      value: adminUsers.filter(a => a.role === 'super_admin').length,
+      icon: <MdSupervisorAccount className="w-6 h-6" />,
+      color: 'bg-pink-500',
+      change: '+0',
+      trend: 'up',
+      onClick: onOpenAdminManagementModal
     }
   ]
 
@@ -79,6 +103,11 @@ export default function DashboardTab({
   const upcomingEvents = timelineData
     .filter(item => new Date(item.date) >= new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 3)
+
+  const recentAdmins = adminUsers
+    .filter(a => a.status === 'active')
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 3)
 
   return (
@@ -103,7 +132,7 @@ export default function DashboardTab({
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {stats.map((stat, index) => (
           <button
             key={index}
@@ -129,7 +158,7 @@ export default function DashboardTab({
       </div>
 
       {/* Recent Activities and Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activities */}
         <div className="bg-gray-800 rounded-xl p-6">
           <div className="flex justify-between items-center mb-6">
@@ -199,51 +228,102 @@ export default function DashboardTab({
           </div>
         </div>
 
-        {/* Quick Actions & Upcoming Events */}
+        {/* Quick Actions */}
+        <div className="bg-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+            <MdAdd className="w-5 h-5" />
+            Quick Actions
+          </h3>
+          
+          <div className="space-y-3">
+            <button
+              onClick={onOpenActivityModal}
+              className="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
+            >
+              <div className="flex items-center gap-3">
+                <MdEventNote className="w-5 h-5" />
+                <span>Add New Activity</span>
+              </div>
+              <span className="group-hover:translate-x-1 transition-transform">+</span>
+            </button>
+            
+            <button
+              onClick={onOpenTimelineModal}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
+            >
+              <div className="flex items-center gap-3">
+                <MdTimeline className="w-5 h-5" />
+                <span>Add Timeline Event</span>
+              </div>
+              <span className="group-hover:translate-x-1 transition-transform">+</span>
+            </button>
+            
+            {pendingAdmins.length > 0 && (
+              <button
+                onClick={onOpenPendingModal}
+                className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-red-500/30 group"
+              >
+                <div className="flex items-center gap-3">
+                  <MdWarning className="w-5 h-5" />
+                  <span>Review Pending Admins</span>
+                </div>
+                <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  {pendingAdmins.length}
+                </span>
+              </button>
+            )}
+            
+            {adminUsers.length > 0 && (
+              <button
+                onClick={onOpenAdminManagementModal}
+                className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-indigo-500/30 group"
+              >
+                <div className="flex items-center gap-3">
+                  <MdAdminPanelSettings className="w-5 h-5" />
+                  <span>Manage Admins</span>
+                </div>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Admins & Upcoming Events */}
         <div className="space-y-6">
-          {/* Quick Actions */}
+          {/* Recent Admins */}
           <div className="bg-gray-800 rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <MdAdd className="w-5 h-5" />
-              Quick Actions
+              <MdPeopleAlt className="w-5 h-5" />
+              Recent Admins
             </h3>
             
-            <div className="space-y-3">
-              <button
-                onClick={onOpenActivityModal}
-                className="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
-              >
-                <div className="flex items-center gap-3">
-                  <MdEventNote className="w-5 h-5" />
-                  <span>Add New Activity</span>
-                </div>
-                <span className="group-hover:translate-x-1 transition-transform">+</span>
-              </button>
-              
-              <button
-                onClick={onOpenTimelineModal}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
-              >
-                <div className="flex items-center gap-3">
-                  <MdTimeline className="w-5 h-5" />
-                  <span>Add Timeline Event</span>
-                </div>
-                <span className="group-hover:translate-x-1 transition-transform">+</span>
-              </button>
-              
-              {pendingAdmins.length > 0 && (
-                <button
-                  onClick={onOpenPendingModal}
-                  className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-red-500/30 group"
-                >
+            <div className="space-y-4">
+              {recentAdmins.map((admin) => (
+                <div key={admin.id} className="p-3 bg-gray-900/50 rounded-lg hover:bg-gray-900 transition">
                   <div className="flex items-center gap-3">
-                    <MdWarning className="w-5 h-5" />
-                    <span>Review Pending Admins</span>
+                    <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
+                      <MdPeopleAlt className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{admin.full_name || 'No Name'}</p>
+                      <p className="text-xs text-gray-400 truncate">{admin.email}</p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      admin.role === 'super_admin' 
+                        ? 'bg-purple-500/20 text-purple-400' 
+                        : 'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {admin.role === 'super_admin' ? 'Super' : 'Admin'}
+                    </span>
                   </div>
-                  <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    {pendingAdmins.length}
-                  </span>
-                </button>
+                </div>
+              ))}
+              
+              {recentAdmins.length === 0 && (
+                <div className="text-center py-6 text-gray-500">
+                  <MdPeopleAlt className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                  <p className="text-sm">No active admins</p>
+                </div>
               )}
             </div>
           </div>
@@ -297,7 +377,7 @@ export default function DashboardTab({
       {/* System Status */}
       <div className="bg-gray-800 rounded-xl p-6">
         <h3 className="text-lg font-semibold mb-4">System Status</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-green-400">Database</span>
@@ -320,6 +400,14 @@ export default function DashboardTab({
               <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
             </div>
             <p className="text-xs text-gray-400">Response time: 120ms</p>
+          </div>
+          
+          <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-indigo-400">Users</span>
+              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+            </div>
+            <p className="text-xs text-gray-400">{adminUsers.length} active users</p>
           </div>
         </div>
       </div>

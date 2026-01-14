@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="mb-6 md:mb-0">
             <a href="#home">
               <Image
-                src="/assets/alkhawarizmi.png"
+                src="/assets/alkhawarizmi.webp"
                 alt="Logo Al-Khawarizmi"
                 width={64}
                 height={64}

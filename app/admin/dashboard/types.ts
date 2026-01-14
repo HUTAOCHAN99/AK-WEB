@@ -162,3 +162,17 @@ export interface ValidationError {
 export interface FormErrors {
   [key: string]: string[];
 }
+
+export interface AdminUser {
+  id: string; // auth.users.id
+  profile_id: number; // profiles.profile_id
+  full_name?: string;
+  email?: string;
+  role: 'admin' | 'user' | 'super_admin';
+  status: 'active' | 'inactive' | 'suspended' | 'pending_verification';
+  is_approved: boolean;
+  created_at: string;
+  approved_at?: string;
+  approved_by?: string;
+  last_login?: string;
+}

@@ -12,10 +12,11 @@ import DashboardTab from './components/DashboardTab'
 import TimelineTab from './components/TimelineTab'
 import ActivitiesTab from './components/ActivitiesTab'
 import PendingAdminsTab from './components/PendingAdminsTab'
+import AdminManagementTab from './components/AdminManagementTab'
 import SettingsTab from './components/SettingsTab'
 import TimelineModal from './components/TimelineModal'
 import ActivityModal from './components/ActivityModal'
-import { Activity, TimelineItem, PendingAdmin } from './types'
+import { Activity, TimelineItem, PendingAdmin, AdminUser } from './types'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -33,8 +34,12 @@ export default function AdminDashboard() {
   const [pendingLoading, setPendingLoading] = useState(false)
   const [approvingId, setApprovingId] = useState<string>('')
   
+  // State untuk admin management
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([])
+  const [adminLoading, setAdminLoading] = useState(false)
+  
   // Modal states
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'timeline' | 'activities' | 'pending' | 'settings'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings'>('dashboard')
   const [timelineModalOpen, setTimelineModalOpen] = useState(false)
   const [activityModalOpen, setActivityModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
@@ -105,6 +110,7 @@ export default function AdminDashboard() {
       setActivitiesLoading(true)
       setTimelineLoading(true)
       setPendingLoading(true)
+      setAdminLoading(true)
       
       // Load activities
       const { data: activitiesData } = await supabase
@@ -134,6 +140,16 @@ export default function AdminDashboard() {
       console.log('Pending admins loaded:', pendingData?.length || 0)
       setPendingAdmins(pendingData || [])
       
+      // Load all admins
+      const { data: adminData } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('status', ['active', 'inactive', 'suspended', 'approved', 'pending_verification'])
+        .order('created_at', { ascending: false })
+      
+      console.log('All admins loaded:', adminData?.length || 0)
+      setAdminUsers(adminData || [])
+      
     } catch (error) {
       console.error('Error loading data:', error)
       toast.error('Failed to load data')
@@ -141,6 +157,7 @@ export default function AdminDashboard() {
       setActivitiesLoading(false)
       setTimelineLoading(false)
       setPendingLoading(false)
+      setAdminLoading(false)
     }
   }
 
@@ -224,6 +241,34 @@ export default function AdminDashboard() {
       toast.error('Failed to load pending admins')
     } finally {
       setPendingLoading(false)
+    }
+  }
+
+  // Load all admins
+  const loadAllAdmins = async () => {
+    try {
+      setAdminLoading(true)
+      console.log('Loading all admins...')
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('status', ['active', 'inactive', 'suspended', 'approved', 'pending_verification', 'rejected'])
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error loading admins:', error)
+        toast.error('Failed to load admins')
+        return
+      }
+      
+      console.log('All admins loaded:', data?.length || 0)
+      setAdminUsers(data || [])
+    } catch (error) {
+      console.error('Error loading admins:', error)
+      toast.error('Failed to load admins')
+    } finally {
+      setAdminLoading(false)
     }
   }
 
@@ -517,7 +562,9 @@ export default function AdminDashboard() {
     try {
       setApprovingId(adminId)
       
-      const { error } = await supabase
+      console.log('✅ Approving admin:', { profileId, adminId })
+      
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           status: 'approved',
@@ -526,11 +573,18 @@ export default function AdminDashboard() {
           approved_at: new Date().toISOString()
         })
         .eq('profile_id', profileId)
+        .select()
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ Error approving admin:', error)
+        throw error
+      }
       
+      console.log('✅ Admin approved:', data)
       toast.success('Admin approved successfully!')
+      
       await loadPendingAdmins()
+      await loadAllAdmins() // Refresh admin list
     } catch (error: any) {
       console.error('Error approving admin:', error)
       toast.error(`Error: ${error.message}`)
@@ -567,6 +621,148 @@ export default function AdminDashboard() {
     }
   }
 
+  // Handle update admin - DIPERBAIKI
+  const handleUpdateAdmin = async (profileId: number, updates: Partial<AdminUser>) => {
+    console.log('=== START handleUpdateAdmin ===')
+    console.log('Input:', { 
+      profileId, 
+      updates,
+      typeProfileId: typeof profileId,
+      isValid: !isNaN(profileId) && profileId > 0
+    })
+    console.log('Current user ID:', currentUser?.id)
+    
+    try {
+      // VALIDASI: Pastikan profileId valid
+      if (!profileId || isNaN(profileId)) {
+        console.error('❌ Invalid profileId:', profileId)
+        toast.error('Invalid admin ID')
+        return
+      }
+      
+      const updateData: any = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      }
+      
+      console.log('📝 Update data to send:', updateData)
+      
+      // Jika mengubah status atau role, update field terkait
+      if (updates.status) {
+        console.log('🔄 Updating status to:', updates.status)
+        if (updates.status === 'active') {
+          updateData.is_approved = true
+        } else if (updates.status === 'suspended') {
+          updateData.is_approved = false
+        }
+      }
+      
+      if (updates.role && updates.role !== 'user') {
+        console.log('🔄 Updating role to:', updates.role)
+        updateData.is_approved = true
+        if (!updates.status) {
+          updateData.status = 'active'
+        }
+      }
+      
+      // Validasi: admin tidak bisa mengubah role sendiri menjadi non-admin
+      if (updates.role === 'user') {
+        const adminToUpdate = adminUsers.find(a => a.profile_id === profileId)
+        console.log('👤 Admin to update:', adminToUpdate)
+        if (adminToUpdate?.id === currentUser?.id) {
+          toast.error('You cannot change your own role to user')
+          return
+        }
+      }
+      
+      // Debug: Tampilkan data yang akan diupdate
+      console.log('🚀 Executing Supabase update:', {
+        table: 'profiles',
+        where: { profile_id: profileId },
+        data: updateData
+      })
+      
+      // Lakukan update dengan .select() untuk debugging
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('profile_id', profileId)
+        .select()  // Tambahkan .select() untuk melihat hasil
+      
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        throw error
+      }
+      
+      console.log('✅ Update successful:', data)
+      toast.success('Admin updated successfully!')
+      
+      // Refresh data
+      await loadAllAdmins()
+      
+      console.log('=== END handleUpdateAdmin (SUCCESS) ===')
+      
+    } catch (error: any) {
+      console.error('💥 FULL ERROR DETAILS ===')
+      console.error('Error object:', error)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+      console.error('Profile ID:', profileId)
+      console.error('Updates:', updates)
+      console.error('=== END ERROR ===')
+      
+      toast.error(`Error: ${error.message || 'Unknown error occurred'}`)
+    }
+  }
+
+  // Handle delete adminD
+  const handleDeleteAdmin = async (profileId: number, userId: string) => {
+    console.log('🗑️ Deleting/suspending admin:', { profileId, userId })
+    
+    // Validasi: admin tidak bisa menghapus diri sendiri
+    if (userId === currentUser?.id) {
+      toast.error('You cannot delete your own account')
+      return
+    }
+    
+    if (!confirm('Are you sure you want to suspend this admin? This action cannot be undone.')) return
+    
+    try {
+      // Soft delete - change status to suspended
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          status: 'suspended',
+          is_approved: false,
+          suspended_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('profile_id', profileId)
+        .select()
+      
+      if (error) {
+        console.error('❌ Error suspending admin:', error)
+        throw error
+      }
+      
+      console.log('✅ Admin suspended:', data)
+      toast.success('Admin account suspended!')
+      
+      // Refresh data
+      await loadAllAdmins()
+      
+    } catch (error: any) {
+      console.error('Error deleting admin:', error)
+      toast.error(`Error: ${error.message}`)
+    }
+  }
+
   // Open activity modal
   const openActivityModal = (mode: 'add' | 'edit', activity?: Activity) => {
     console.log('📱 Opening activity modal:', { mode, activity })
@@ -592,6 +788,8 @@ export default function AdminDashboard() {
       loadPendingAdmins()
     } else if (activeTab === 'activities' && activities.length === 0) {
       loadActivities()
+    } else if (activeTab === 'admin-management' && adminUsers.length === 0) {
+      loadAllAdmins()
     }
   }, [activeTab, currentUser])
 
@@ -656,6 +854,7 @@ export default function AdminDashboard() {
                 activities={activities}
                 timelineData={timelineData}
                 pendingAdmins={pendingAdmins}
+                adminUsers={adminUsers}
                 onOpenActivityModal={() => {
                   setActiveTab('activities')
                   setTimeout(() => openActivityModal('add'), 100)
@@ -665,6 +864,7 @@ export default function AdminDashboard() {
                   setTimeout(() => openTimelineModal('add'), 100)
                 }}
                 onOpenPendingModal={() => setActiveTab('pending')}
+                onOpenAdminManagementModal={() => setActiveTab('admin-management')}
               />
             )}
             
@@ -696,6 +896,17 @@ export default function AdminDashboard() {
                 approving={approvingId}
                 onApprove={handleApproveAdmin}
                 onReject={handleRejectAdmin}
+              />
+            )}
+            
+            {/* Admin Management Tab */}
+            {activeTab === 'admin-management' && (
+              <AdminManagementTab 
+                adminUsers={adminUsers}
+                loading={adminLoading}
+                onUpdateAdmin={handleUpdateAdmin}
+                onDeleteAdmin={handleDeleteAdmin}
+                onRefresh={loadAllAdmins}
               />
             )}
             
