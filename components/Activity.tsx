@@ -1,65 +1,70 @@
 // components/Activity.tsx
-'use client'
-import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-import Link from 'next/link'
-import { FaCalendar, FaUsers, FaLaptopCode, FaGraduationCap } from 'react-icons/fa'
+"use client";
+import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
+import {
+  FaCalendar,
+  FaUsers,
+  FaLaptopCode,
+  FaGraduationCap,
+} from "react-icons/fa";
 
 interface Activity {
   id: string;
   title: string;
   description: string;
   image_url?: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   category?: string;
   order_index: number;
 }
 
 export default function Activity() {
-  const [activities, setActivities] = useState<Activity[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadActivities = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        
+        setLoading(true);
+        setError(null);
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
         if (!supabaseUrl || !supabaseKey) {
-          setError('Supabase configuration is missing')
-          return
+          setError("Supabase configuration is missing");
+          return;
         }
-        
-        const supabase = createClient(supabaseUrl, supabaseKey)
-        
+
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
         const { data, error: supabaseError } = await supabase
-          .from('activities')
-          .select('*')
-          .eq('status', 'active')
-          .order('order_index', { ascending: true })
-          .order('created_at', { ascending: false })
-          
+          .from("activities")
+          .select("*")
+          .eq("status", "active")
+          .order("order_index", { ascending: true })
+          .order("created_at", { ascending: false });
+
         if (supabaseError) {
-          setError('Failed to load activities')
-          console.error('Supabase error:', supabaseError)
-          return
+          setError("Failed to load activities");
+          console.error("Supabase error:", supabaseError);
+          return;
         }
-        
-        setActivities(data || [])
+
+        setActivities(data || []);
       } catch (err) {
-        setError('An unexpected error occurred')
-        console.error('Error loading activities:', err)
+        setError("An unexpected error occurred");
+        console.error("Error loading activities:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    loadActivities()
-  }, [])
+    };
+
+    loadActivities();
+  }, []);
 
   return (
     <section id="project" className="py-16 bg-gray-900">
@@ -68,12 +73,11 @@ export default function Activity() {
           <p className="text-primary font-semibold mb-2 tracking-wider">
             -- Activity
           </p>
-          <h2 className="text-3xl font-semibold text-white">
-            Our Activities
-          </h2>
+          <h2 className="text-3xl font-semibold text-white">Our Activities</h2>
           <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-            Berbagai kegiatan yang kami selenggarakan untuk membangun ukhuwah islamiyah 
-            dan mengembangkan potensi anggota di bidang teknologi dan dakwah.
+            Berbagai kegiatan yang kami selenggarakan untuk membangun ukhuwah
+            islamiyah dan mengembangkan potensi anggota di bidang teknologi dan
+            dakwah.
           </p>
         </div>
 
@@ -85,8 +89,18 @@ export default function Activity() {
         ) : error ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/20 text-red-500 mb-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <p className="text-red-400 mb-2">Error loading activities</p>
@@ -96,7 +110,9 @@ export default function Activity() {
           <div className="text-center py-12">
             <FaCalendar className="text-4xl text-gray-500 mx-auto mb-4" />
             <p className="text-gray-400">No activities found.</p>
-            <p className="text-gray-500 text-sm mt-2">Check back later for upcoming activities</p>
+            <p className="text-gray-500 text-sm mt-2">
+              Check back later for upcoming activities
+            </p>
           </div>
         ) : (
           <>
@@ -115,12 +131,12 @@ export default function Activity() {
                           onError={(e) => {
                             // Fallback jika gambar gagal load
                             const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
+                            target.style.display = "none";
                             // Tampilkan placeholder
                             const parent = target.parentElement;
                             if (parent) {
                               parent.innerHTML = `
-                                <div class="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
+                                <div class="w-full h-full bg-linear-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
                                   <svg class="w-12 h-12 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                   </svg>
@@ -131,14 +147,24 @@ export default function Activity() {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
-                          <svg className="w-12 h-12 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <div className="w-full h-full bg-linear-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
+                          <svg
+                            className="w-12 h-12 text-gray-500 mb-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="1.5"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
                           </svg>
                           <p className="text-gray-400 text-sm">No thumbnail</p>
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-gray-900/80 via-transparent to-transparent"></div>
                       <div className="absolute bottom-4 left-4">
                         <h3 className="text-xl font-semibold text-white">
                           {activity.title}
@@ -150,7 +176,7 @@ export default function Activity() {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Content */}
                     <div className="p-5 md:p-6 flex-1 flex flex-col">
                       <div className="mb-4">
@@ -161,20 +187,30 @@ export default function Activity() {
                           {activity.description}
                         </p>
                       </div>
-                      
+
                       <div className="mt-auto pt-4 border-t border-gray-700">
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-gray-400 flex items-center">
                             <FaCalendar className="w-3 h-3 mr-2" />
                             Regular Activity
                           </span>
-                          <Link 
-                            href="#contact" 
+                          <Link
+                            href={`/activity/${activity.id}`} // Ubah href ini
                             className="text-primary hover:text-primary-light font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300"
                           >
                             Learn More
-                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            <svg
+                              className="w-4 h-4 ml-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                              />
                             </svg>
                           </Link>
                         </div>
@@ -191,22 +227,47 @@ export default function Activity() {
                 <h3 className="text-2xl font-semibold text-white mb-2">
                   Our Impact in Numbers
                 </h3>
-                <p className="text-gray-400">Pencapaian dan aktivitas kami dalam angka</p>
+                <p className="text-gray-400">
+                  Pencapaian dan aktivitas kami dalam angka
+                </p>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {[
-                  { number: '50+', label: 'Active Members', icon: <FaUsers className="text-primary text-xl" /> },
-                  { number: `${activities.length}+`, label: 'Monthly Activities', icon: <FaCalendar className="text-primary text-xl" /> },
-                  { number: '4', label: 'Core Divisions', icon: <FaLaptopCode className="text-primary text-xl" /> },
-                  { number: '100%', label: 'Member Satisfaction', icon: <FaGraduationCap className="text-primary text-xl" /> }
+                  {
+                    number: "50+",
+                    label: "Active Members",
+                    icon: <FaUsers className="text-primary text-xl" />,
+                  },
+                  {
+                    number: `${activities.length}+`,
+                    label: "Monthly Activities",
+                    icon: <FaCalendar className="text-primary text-xl" />,
+                  },
+                  {
+                    number: "4",
+                    label: "Core Divisions",
+                    icon: <FaLaptopCode className="text-primary text-xl" />,
+                  },
+                  {
+                    number: "100%",
+                    label: "Member Satisfaction",
+                    icon: <FaGraduationCap className="text-primary text-xl" />,
+                  },
                 ].map((stat, index) => (
-                  <div key={index} className="text-center p-4 md:p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition duration-300">
+                  <div
+                    key={index}
+                    className="text-center p-4 md:p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition duration-300"
+                  >
                     <div className="flex justify-center mb-3 md:mb-4">
                       {stat.icon}
                     </div>
-                    <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.number}</div>
-                    <div className="text-gray-300 text-xs md:text-sm">{stat.label}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white mb-2">
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-300 text-xs md:text-sm">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -214,23 +275,23 @@ export default function Activity() {
 
             {/* Call to Action */}
             <div className="mt-12 text-center">
-              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-lg p-6 md:p-8 max-w-3xl mx-auto">
+              <div className="bg-linear-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-lg p-6 md:p-8 max-w-3xl mx-auto">
                 <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">
                   Ready to Join Our Activities?
                 </h3>
                 <p className="text-gray-300 mb-4 md:mb-6 text-sm md:text-base">
-                  Bergabunglah dengan kami dalam membangun komunitas muslim yang unggul 
-                  dalam teknologi dan keislaman.
+                  Bergabunglah dengan kami dalam membangun komunitas muslim yang
+                  unggul dalam teknologi dan keislaman.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-                  <Link 
-                    href="#contact" 
+                  <Link
+                    href="#contact"
                     className="bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg shadow hover:shadow-md transition duration-300 text-center"
                   >
                     Contact Us Now
                   </Link>
-                  <a 
-                    href="https://bit.ly/4bMUFnx" 
+                  <a
+                    href="https://bit.ly/4bMUFnx"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg border border-gray-600 hover:border-gray-500 transition duration-300 text-center"
@@ -244,5 +305,5 @@ export default function Activity() {
         )}
       </div>
     </section>
-  )
+  );
 }
