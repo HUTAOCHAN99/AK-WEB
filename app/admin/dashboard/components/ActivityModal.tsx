@@ -22,7 +22,7 @@ export default function ActivityModal({
   onClose,
   onSubmit
 }: ActivityModalProps) {
-  // State untuk preview gambar
+  // State untuk preview gambar 
   const [mainImagePreview, setMainImagePreview] = useState<string>(
     currentActivity?.image_url || ''
   )
@@ -151,7 +151,7 @@ export default function ActivityModal({
     console.log('✅ Form validation passed, submitting...')
     onSubmit(e)
   }, [onSubmit, mode])
-
+  
   // Reset preview when modal closes
   const resetForm = useCallback(() => {
     setMainImagePreview(currentActivity?.image_url || '')

@@ -222,6 +222,7 @@ export default function Activity() {
             </div>
 
             {/* Stats Section */}
+            {/* Stats Section */}
             <div className="mt-16 pt-8 border-t border-gray-800">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-semibold text-white mb-2">
@@ -232,44 +233,48 @@ export default function Activity() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {[
-                  {
-                    number: "50+",
-                    label: "Active Members",
-                    icon: <FaUsers className="text-primary text-xl" />,
-                  },
-                  {
-                    number: `${activities.length}+`,
-                    label: "Monthly Activities",
-                    icon: <FaCalendar className="text-primary text-xl" />,
-                  },
-                  {
-                    number: "4",
-                    label: "Core Divisions",
-                    icon: <FaLaptopCode className="text-primary text-xl" />,
-                  },
-                  {
-                    number: "100%",
-                    label: "Member Satisfaction",
-                    icon: <FaGraduationCap className="text-primary text-xl" />,
-                  },
-                ].map((stat, index) => (
-                  <div
-                    key={index}
-                    className="text-center p-4 md:p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition duration-300"
-                  >
-                    <div className="flex justify-center mb-3 md:mb-4">
-                      {stat.icon}
+              {/* Centered Grid Wrapper */}
+              <div className="max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {[
+                    {
+                      number: "15",
+                      label: "Member Aktif",
+                      icon: <FaUsers className="text-primary text-2xl" />,
+                    },
+                    {
+                      number: `${activities.length}+`,
+                      label: "Program Kerja",
+                      icon: <FaCalendar className="text-primary text-2xl" />,
+                    },
+                    {
+                      number: "4",
+                      label: "Divisi Inti",
+                      icon: <FaLaptopCode className="text-primary text-2xl" />,
+                    },
+                  ].map((stat, index) => (
+                    <div
+                      key={index}
+                      className="group text-center p-6 bg-gray-800 rounded-xl shadow-md
+                     hover:bg-gray-700 hover:-translate-y-1
+                     transition-all duration-300"
+                    >
+                      <div className="flex justify-center mb-4">
+                        <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/20">
+                          {stat.icon}
+                        </div>
+                      </div>
+
+                      <div className="text-3xl font-bold text-white mb-1">
+                        {stat.number}
+                      </div>
+
+                      <div className="text-gray-300 text-sm tracking-wide">
+                        {stat.label}
+                      </div>
                     </div>
-                    <div className="text-2xl md:text-3xl font-bold text-white mb-2">
-                      {stat.number}
-                    </div>
-                    <div className="text-gray-300 text-xs md:text-sm">
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
