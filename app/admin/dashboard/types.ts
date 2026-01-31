@@ -9,6 +9,18 @@ export interface TimelineItem {
   created_at: string;
 }
 
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  status: 'unread' | 'read' | 'replied';
+  created_at: string;
+  replied_at?: string;
+  replied_by?: string;
+  notes?: string;
+}
+
 export interface PendingAdmin {
   id: string; // auth.users.id
   profile_id: number; // profiles.profile_id

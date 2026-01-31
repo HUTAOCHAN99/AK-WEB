@@ -14,19 +14,22 @@ import {
   MdCheckCircle,
   MdWarning,
   MdAdminPanelSettings,
-  MdSupervisorAccount
+  MdSupervisorAccount,
+  MdContactMail
 } from 'react-icons/md'
-import { Activity, TimelineItem, PendingAdmin, AdminUser } from '../types'
+import { Activity, TimelineItem, PendingAdmin, AdminUser, ContactMessage } from '../types'
 
 interface DashboardTabProps {
   activities: Activity[];
   timelineData: TimelineItem[];
   pendingAdmins: PendingAdmin[];
   adminUsers: AdminUser[];
+  contactMessages: ContactMessage[];
   onOpenActivityModal: () => void;
   onOpenTimelineModal: () => void;
   onOpenPendingModal: () => void;
   onOpenAdminManagementModal: () => void;
+  onOpenContactModal: () => void;
 }
 
 export default function DashboardTab({
@@ -34,10 +37,12 @@ export default function DashboardTab({
   timelineData,
   pendingAdmins,
   adminUsers,
+  contactMessages,
   onOpenActivityModal,
   onOpenTimelineModal,
   onOpenPendingModal,
-  onOpenAdminManagementModal
+  onOpenAdminManagementModal,
+  onOpenContactModal
 }: DashboardTabProps) {
   const stats = [
     {
@@ -77,20 +82,20 @@ export default function DashboardTab({
       onClick: onOpenPendingModal
     },
     {
+      title: 'Contact Messages',
+      value: contactMessages.length,
+      icon: <MdContactMail className="w-6 h-6" />,
+      color: contactMessages.filter(m => m.status === 'unread').length > 0 ? 'bg-orange-500' : 'bg-teal-500',
+      change: contactMessages.filter(m => m.status === 'unread').length > 0 ? `${contactMessages.filter(m => m.status === 'unread').length} unread` : 'All read',
+      trend: contactMessages.filter(m => m.status === 'unread').length > 0 ? 'down' : 'up',
+      onClick: onOpenContactModal
+    },
+    {
       title: 'Active Admins',
       value: adminUsers.filter(a => a.status === 'active').length,
       icon: <MdAdminPanelSettings className="w-6 h-6" />,
       color: 'bg-indigo-500',
       change: '+2',
-      trend: 'up',
-      onClick: onOpenAdminManagementModal
-    },
-    {
-      title: 'Super Admins',
-      value: adminUsers.filter(a => a.role === 'super_admin').length,
-      icon: <MdSupervisorAccount className="w-6 h-6" />,
-      color: 'bg-pink-500',
-      change: '+0',
       trend: 'up',
       onClick: onOpenAdminManagementModal
     }
@@ -110,15 +115,19 @@ export default function DashboardTab({
     .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 3)
 
+  const recentMessages = contactMessages
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3)
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-6">
+      <div className="bg-linear-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold mb-2">Welcome to Admin Dashboard</h1>
             <p className="text-gray-300">
-              Manage your organizations activities, timeline events, and admin approvals from one place.
+              Manage your organizations activities, timeline events, admin approvals, and contact messages from one place.
             </p>
           </div>
           <button
@@ -157,7 +166,7 @@ export default function DashboardTab({
         ))}
       </div>
 
-      {/* Recent Activities and Quick Actions */}
+      {/* Recent Activities, Contact Messages, and Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activities */}
         <div className="bg-gray-800 rounded-xl p-6">
@@ -180,7 +189,7 @@ export default function DashboardTab({
           <div className="space-y-4">
             {recentActivities.map((activity) => (
               <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-750 rounded-lg transition group">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {activity.image_url ? (
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-700">
                       <img 
@@ -228,102 +237,125 @@ export default function DashboardTab({
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Recent Contact Messages */}
         <div className="bg-gray-800 rounded-xl p-6">
-          <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-            <MdAdd className="w-5 h-5" />
-            Quick Actions
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <MdContactMail className="w-5 h-5" />
+              Recent Messages
+            </h3>
+            <button 
+              onClick={onOpenContactModal}
+              className="text-primary hover:text-primary-light text-sm font-medium flex items-center gap-1"
+            >
+              View All
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
           
-          <div className="space-y-3">
-            <button
-              onClick={onOpenActivityModal}
-              className="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
-            >
-              <div className="flex items-center gap-3">
-                <MdEventNote className="w-5 h-5" />
-                <span>Add New Activity</span>
-              </div>
-              <span className="group-hover:translate-x-1 transition-transform">+</span>
-            </button>
-            
-            <button
-              onClick={onOpenTimelineModal}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
-            >
-              <div className="flex items-center gap-3">
-                <MdTimeline className="w-5 h-5" />
-                <span>Add Timeline Event</span>
-              </div>
-              <span className="group-hover:translate-x-1 transition-transform">+</span>
-            </button>
-            
-            {pendingAdmins.length > 0 && (
-              <button
-                onClick={onOpenPendingModal}
-                className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-red-500/30 group"
-              >
-                <div className="flex items-center gap-3">
-                  <MdWarning className="w-5 h-5" />
-                  <span>Review Pending Admins</span>
+          <div className="space-y-4">
+            {recentMessages.map((message) => (
+              <div key={message.id} className="p-4 hover:bg-gray-750 rounded-lg transition group">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate group-hover:text-primary transition">
+                      {message.name}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {message.email}
+                    </p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    message.status === 'unread' 
+                      ? 'bg-yellow-500/20 text-yellow-400' 
+                      : message.status === 'replied'
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-blue-500/20 text-blue-400'
+                  }`}>
+                    {message.status}
+                  </span>
                 </div>
-                <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  {pendingAdmins.length}
-                </span>
-              </button>
-            )}
+                <p className="text-sm text-gray-300 line-clamp-2">
+                  {message.message}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {new Date(message.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
             
-            {adminUsers.length > 0 && (
-              <button
-                onClick={onOpenAdminManagementModal}
-                className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-indigo-500/30 group"
-              >
-                <div className="flex items-center gap-3">
-                  <MdAdminPanelSettings className="w-5 h-5" />
-                  <span>Manage Admins</span>
-                </div>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
+            {recentMessages.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <MdContactMail className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                <p>No messages yet.</p>
+                <p className="text-xs mt-2">New messages will appear here</p>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Recent Admins & Upcoming Events */}
+        {/* Quick Actions */}
         <div className="space-y-6">
-          {/* Recent Admins */}
+          {/* Quick Actions */}
           <div className="bg-gray-800 rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <MdPeopleAlt className="w-5 h-5" />
-              Recent Admins
+              <MdAdd className="w-5 h-5" />
+              Quick Actions
             </h3>
             
-            <div className="space-y-4">
-              {recentAdmins.map((admin) => (
-                <div key={admin.id} className="p-3 bg-gray-900/50 rounded-lg hover:bg-gray-900 transition">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
-                      <MdPeopleAlt className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{admin.full_name || 'No Name'}</p>
-                      <p className="text-xs text-gray-400 truncate">{admin.email}</p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      admin.role === 'super_admin' 
-                        ? 'bg-purple-500/20 text-purple-400' 
-                        : 'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      {admin.role === 'super_admin' ? 'Super' : 'Admin'}
-                    </span>
-                  </div>
+            <div className="space-y-3">
+              <button
+                onClick={onOpenActivityModal}
+                className="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
+              >
+                <div className="flex items-center gap-3">
+                  <MdEventNote className="w-5 h-5" />
+                  <span>Add New Activity</span>
                 </div>
-              ))}
+                <span className="group-hover:translate-x-1 transition-transform">+</span>
+              </button>
               
-              {recentAdmins.length === 0 && (
-                <div className="text-center py-6 text-gray-500">
-                  <MdPeopleAlt className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                  <p className="text-sm">No active admins</p>
+              <button
+                onClick={onOpenTimelineModal}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 group"
+              >
+                <div className="flex items-center gap-3">
+                  <MdTimeline className="w-5 h-5" />
+                  <span>Add Timeline Event</span>
                 </div>
+                <span className="group-hover:translate-x-1 transition-transform">+</span>
+              </button>
+              
+              {pendingAdmins.length > 0 && (
+                <button
+                  onClick={onOpenPendingModal}
+                  className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-red-500/30 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <MdWarning className="w-5 h-5" />
+                    <span>Review Pending Admins</span>
+                  </div>
+                  <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {pendingAdmins.length}
+                  </span>
+                </button>
+              )}
+              
+              {contactMessages.filter(m => m.status === 'unread').length > 0 && (
+                <button
+                  onClick={onOpenContactModal}
+                  className="w-full bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 py-3 px-4 rounded-lg flex items-center justify-between transition duration-300 border border-orange-500/30 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <MdContactMail className="w-5 h-5" />
+                    <span>Review Messages</span>
+                  </div>
+                  <span className="bg-orange-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {contactMessages.filter(m => m.status === 'unread').length}
+                  </span>
+                </button>
               )}
             </div>
           </div>
@@ -349,7 +381,7 @@ export default function DashboardTab({
                         })}
                       </p>
                     </div>
-                    <MdCheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
+                    <MdCheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-1" />
                   </div>
                   {event.tags && (
                     <div className="mt-2 flex flex-wrap gap-1">

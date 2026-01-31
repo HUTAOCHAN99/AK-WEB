@@ -95,7 +95,7 @@ export default function ActivitiesTab({
                       />
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
+                    <div className="w-full h-full bg-linear-to-br from-gray-700 to-gray-800 flex flex-col items-center justify-center">
                       <MdImage className="text-4xl text-gray-500 mb-3" />
                       <p className="text-gray-400 text-sm">No thumbnail</p>
                     </div>
@@ -122,7 +122,7 @@ export default function ActivitiesTab({
                     
                     {activity.category && (
                       <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
-                        <MdCategory className="w-4 h-4 flex-shrink-0" />
+                        <MdCategory className="w-4 h-4 shrink-0" />
                         <span className="truncate" title={activity.category}>
                           {activity.category}
                         </span>

@@ -1,4 +1,4 @@
-// app/admin/dashboard/components/Sidebar.tsx - FIXED VERSION
+// app/admin/dashboard/components/Sidebar.tsx - UPDATED VERSION WITH CONTACT
 'use client'
 
 import { 
@@ -8,7 +8,8 @@ import {
   MdDashboard, 
   MdSettings,
   MdAdminPanelSettings,
-  MdClose
+  MdClose,
+  MdContactMail // ADDED
 } from 'react-icons/md'
 
 interface UserProfile {
@@ -18,12 +19,13 @@ interface UserProfile {
   role?: string;
 }
 
-type TabType = 'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings';
+type TabType = 'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings' | 'contact'; // UPDATED
 
 interface SidebarProps {
   currentUser: UserProfile | null;
   activeTab: TabType;
   pendingCount: number;
+  unreadContactCount?: number; // ADDED
   onTabChange: (tab: TabType) => void;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -32,7 +34,8 @@ interface SidebarProps {
 export default function Sidebar({ 
   currentUser,
   activeTab, 
-  pendingCount, 
+  pendingCount,
+  unreadContactCount = 0, // ADDED
   onTabChange, 
   sidebarOpen,
   onToggleSidebar 
@@ -57,7 +60,12 @@ export default function Sidebar({
       label: 'Admin Management', 
       icon: <MdAdminPanelSettings className="w-5 h-5" /> 
     },
-    { id: 'settings', label: 'Settings', icon: <MdSettings className="w-5 h-5" /> },
+    { // ADDED CONTACT ITEM
+      id: 'contact', 
+      label: 'Contact Messages', 
+      icon: <MdContactMail className="w-5 h-5" />,
+      badge: unreadContactCount > 0 ? unreadContactCount : undefined
+    }
   ]
 
   return (
@@ -74,7 +82,7 @@ export default function Sidebar({
       <aside className={`
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         lg:translate-x-0 lg:relative
-        fixed lg:static
+        fixed
         top-0 left-0
         w-64 lg:w-auto
         h-screen
@@ -93,7 +101,7 @@ export default function Sidebar({
               </div>
               <div>
                 <h2 className="font-semibold">Admin Menu</h2>
-                <p className="text-xs text-gray-400 truncate max-w-[140px]">
+                <p className="text-xs text-gray-400 truncate max-w-35">
                   {currentUser?.email || 'admin@email.com'}
                 </p>
               </div>
@@ -142,7 +150,10 @@ export default function Sidebar({
               <span className="font-medium flex-1 text-left">{item.label}</span>
               {/* HANYA TAMPILKAN SATU BADGE DI SINI */}
               {item.badge && item.badge > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                <span className={`
+                  text-xs px-2 py-1 rounded-full min-w-5 h-5 flex items-center justify-center
+                  ${item.id === 'pending' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-yellow-900'}
+                `}>
                   {item.badge}
                 </span>
               )}

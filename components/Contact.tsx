@@ -1,13 +1,109 @@
+'use client'
+
+import { useState } from 'react'
 import { 
   FaMapMarkerAlt, 
   FaEnvelope, 
   FaWhatsapp, 
-  FaArrowRight 
+  FaArrowRight,
+  FaCheckCircle,
+  FaExclamationCircle
 } from 'react-icons/fa'
+import toast, { Toaster } from 'react-hot-toast'
+import { createClient } from '@supabase/supabase-js'
+
+// Inisialisasi Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+interface ContactFormData {
+  name: string
+  email: string
+  message: string
+  status?: 'unread' | 'read' | 'replied'
+}
 
 export default function Contact() {
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    email: '',
+    message: '',
+    status: 'unread'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    try {
+      // Simpan data ke Supabase
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+            status: 'unread',
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        message: '',
+        status: 'unread'
+      })
+      
+      setIsSuccess(true)
+      toast.success('Pesan berhasil dikirim!')
+      
+      // Reset success state setelah 5 detik
+      setTimeout(() => {
+        setIsSuccess(false)
+      }, 5000)
+
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      toast.error('Terjadi kesalahan. Silakan coba lagi.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <section id="contact" className="py-16 bg-gray-800">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#1f2937',
+            color: '#fff',
+            border: '1px solid #374151'
+          }
+        }}
+      />
+      
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Contact Form */}
@@ -21,32 +117,89 @@ export default function Contact() {
               </h2>
             </div>
 
-            <form action="https://formsubmit.co/alkhawarizmiifupnyk@gmail.com" method="POST" className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-gray-300 font-medium mb-2">
-                  Name
-                </label>
-                <input type="text" id="name" name="name" required className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" placeholder="Your Name" />
+            {isSuccess ? (
+              <div className="bg-green-900/20 border border-green-700 rounded-lg p-8 text-center">
+                <FaCheckCircle className="text-5xl text-green-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Terima Kasih!
+                </h3>
+                <p className="text-gray-300">
+                  Pesan Anda telah berhasil dikirim. Kami akan membalas secepatnya.
+                </p>
+                <button
+                  onClick={() => setIsSuccess(false)}
+                  className="mt-4 text-primary hover:text-primary-light font-medium"
+                >
+                  Kirim pesan lainnya
+                </button>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-gray-300 font-medium mb-2">
+                    Name *
+                  </label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    required 
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" 
+                    placeholder="Your Name" 
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="email" className="block text-gray-300 font-medium mb-2">
-                  Email
-                </label>
-                <input type="email" id="email" name="email" required className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" placeholder="you@example.com" />
-              </div>
+                <div>
+                  <label htmlFor="email" className="block text-gray-300 font-medium mb-2">
+                    Email *
+                  </label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" 
+                    placeholder="you@example.com" 
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="message" className="block text-gray-300 font-medium mb-2">
-                  Message
-                </label>
-                <textarea id="message" name="message" rows={4} className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" placeholder="Your Message"></textarea>
-              </div>
+                <div>
+                  <label htmlFor="message" className="block text-gray-300 font-medium mb-2">
+                    Message *
+                  </label>
+                  <textarea 
+                    id="message" 
+                    name="message" 
+                    rows={4} 
+                    required
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white transition duration-300" 
+                    placeholder="Your Message"
+                  ></textarea>
+                </div>
 
-              <button type="submit" className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg shadow hover:shadow-md transition duration-300">
-                Send Message
-              </button>
-            </form>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg shadow hover:shadow-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Mengirim...
+                    </>
+                  ) : 'Send Message'}
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Contact Info */}
@@ -104,6 +257,19 @@ export default function Contact() {
                   Register Members
                   <FaArrowRight className="ml-2" />
                 </a>
+              </div>
+
+              {/* Info tambahan */}
+              <div className="mt-8 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                <div className="flex items-start">
+                  <FaExclamationCircle className="text-yellow-500 mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-medium text-white mb-1">Catatan</h4>
+                    <p className="text-sm text-gray-400">
+                      Pesan Anda akan langsung masuk ke sistem kami. Tim admin akan membalas melalui email dalam 1-2 hari kerja.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

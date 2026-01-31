@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/admin/dashboard/page.tsx
+// app/admin/dashboard/page.tsx - VERSI DIPERBAIKI
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -13,10 +13,10 @@ import TimelineTab from './components/TimelineTab'
 import ActivitiesTab from './components/ActivitiesTab'
 import PendingAdminsTab from './components/PendingAdminsTab'
 import AdminManagementTab from './components/AdminManagementTab'
-import SettingsTab from './components/SettingsTab'
 import TimelineModal from './components/TimelineModal'
 import ActivityModal from './components/ActivityModal'
-import { Activity, TimelineItem, PendingAdmin, AdminUser } from './types'
+import { Activity, TimelineItem, PendingAdmin, AdminUser, ContactMessage } from './types'
+import ContactTab from './components/ContactTab'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -38,8 +38,12 @@ export default function AdminDashboard() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([])
   const [adminLoading, setAdminLoading] = useState(false)
   
+  // State untuk contact messages
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([])
+  const [contactLoading, setContactLoading] = useState(false)
+  
   // Modal states
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'timeline' | 'activities' | 'pending' | 'admin-management' | 'settings' | 'contact'>('dashboard')
   const [timelineModalOpen, setTimelineModalOpen] = useState(false)
   const [activityModalOpen, setActivityModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
@@ -102,6 +106,7 @@ export default function AdminDashboard() {
     }
     
     checkAuth()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Load semua data sekaligus
@@ -111,6 +116,7 @@ export default function AdminDashboard() {
       setTimelineLoading(true)
       setPendingLoading(true)
       setAdminLoading(true)
+      setContactLoading(true)
       
       // Load activities
       const { data: activitiesData } = await supabase
@@ -150,6 +156,15 @@ export default function AdminDashboard() {
       console.log('All admins loaded:', adminData?.length || 0)
       setAdminUsers(adminData || [])
       
+      // Load contact messages
+      const { data: contactData } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      console.log('Contact messages loaded:', contactData?.length || 0)
+      setContactMessages(contactData || [])
+      
     } catch (error) {
       console.error('Error loading data:', error)
       toast.error('Failed to load data')
@@ -158,6 +173,7 @@ export default function AdminDashboard() {
       setTimelineLoading(false)
       setPendingLoading(false)
       setAdminLoading(false)
+      setContactLoading(false)
     }
   }
 
@@ -269,6 +285,93 @@ export default function AdminDashboard() {
       toast.error('Failed to load admins')
     } finally {
       setAdminLoading(false)
+    }
+  }
+
+  // Load contact messages
+  const loadContactMessages = async () => {
+    try {
+      setContactLoading(true)
+      console.log('Loading contact messages...')
+      
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error loading contact messages:', error)
+        toast.error('Failed to load contact messages')
+        return
+      }
+      
+      console.log('Contact messages loaded:', data?.length || 0)
+      setContactMessages(data || [])
+    } catch (error: any) {
+      console.error('Error loading contact messages:', error)
+      toast.error('Failed to load contact messages')
+    } finally {
+      setContactLoading(false)
+    }
+  }
+
+  // Handle mark as read - VERSI YANG BENAR
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      console.log('🚀 Marking message as read:', id)
+      
+      const { error } = await supabase
+        .from('contact_messages')
+        .update({
+          status: 'read',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+      
+      if (error) throw error
+      
+      toast.success('✅ Message marked as read!')
+      
+      // Update state secara langsung untuk immediate feedback
+      setContactMessages(prevMessages => 
+        prevMessages.map(message => 
+          message.id === id 
+            ? { ...message, status: 'read' as const }
+            : message
+        )
+      )
+      
+      // Juga update sidebar count
+      await loadContactMessages()
+      
+    } catch (error: any) {
+      console.error('❌ Error marking as read:', error)
+      toast.error(`Error: ${error.message}`)
+    }
+  }
+
+  // Handle delete message - VERSI YANG BENAR
+  const handleDeleteMessage = async (id: string) => {
+    try {
+      console.log('🗑️ Deleting message:', id)
+      
+      const { error } = await supabase
+        .from('contact_messages')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
+      
+      toast.success('✅ Message deleted successfully')
+      
+      // Update state secara langsung untuk immediate feedback
+      setContactMessages(prevMessages => 
+        prevMessages.filter(message => message.id !== id)
+      )
+      
+    } catch (error: any) {
+      console.error('❌ Error deleting message:', error)
+      toast.error(`Error: ${error.message}`)
     }
   }
 
@@ -621,7 +724,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // Handle update admin - DIPERBAIKI
+  // Handle update admin
   const handleUpdateAdmin = async (profileId: number, updates: Partial<AdminUser>) => {
     console.log('=== START handleUpdateAdmin ===')
     console.log('Input:', { 
@@ -721,7 +824,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // Handle delete adminD
+  // Handle delete admin
   const handleDeleteAdmin = async (profileId: number, userId: string) => {
     console.log('🗑️ Deleting/suspending admin:', { profileId, userId })
     
@@ -790,7 +893,10 @@ export default function AdminDashboard() {
       loadActivities()
     } else if (activeTab === 'admin-management' && adminUsers.length === 0) {
       loadAllAdmins()
+    } else if (activeTab === 'contact' && contactMessages.length === 0) {
+      loadContactMessages()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentUser])
 
   // Handle logout
@@ -805,6 +911,7 @@ export default function AdminDashboard() {
   }
 
   // Handle save settings
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSaveSettings = async (settings: any) => {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -832,6 +939,7 @@ export default function AdminDashboard() {
         currentUser={currentUser}
         activeTab={activeTab}
         pendingCount={pendingAdmins.length}
+        unreadContactCount={contactMessages.filter(m => m.status === 'unread').length}
         onTabChange={setActiveTab}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -855,6 +963,7 @@ export default function AdminDashboard() {
                 timelineData={timelineData}
                 pendingAdmins={pendingAdmins}
                 adminUsers={adminUsers}
+                contactMessages={contactMessages}
                 onOpenActivityModal={() => {
                   setActiveTab('activities')
                   setTimeout(() => openActivityModal('add'), 100)
@@ -865,6 +974,7 @@ export default function AdminDashboard() {
                 }}
                 onOpenPendingModal={() => setActiveTab('pending')}
                 onOpenAdminManagementModal={() => setActiveTab('admin-management')}
+                onOpenContactModal={() => setActiveTab('contact')}
               />
             )}
             
@@ -910,12 +1020,22 @@ export default function AdminDashboard() {
               />
             )}
             
-            {/* Settings Tab */}
-            {activeTab === 'settings' && (
-              <SettingsTab 
-                currentUser={currentUser}
-                onSaveSettings={handleSaveSettings}
+            {/* Contact Messages Tab - DIPERBAIKI */}
+            {activeTab === 'contact' && (
+              <ContactTab 
+                messages={contactMessages}
+                loading={contactLoading}
+                onMarkAsRead={handleMarkAsRead}
+                onDeleteMessage={handleDeleteMessage}
               />
+            )}
+            
+            {/* Settings Tab (jika diperlukan) */}
+            {activeTab === 'settings' && (
+              <div className="bg-gray-800 rounded-xl p-6">
+                <h2 className="text-2xl font-bold mb-4">Settings</h2>
+                <p className="text-gray-400">Settings page coming soon...</p>
+              </div>
             )}
           </div>
         </div>
