@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { toast } from 'react-hot-toast'
+import { toast, Toaster } from 'react-hot-toast'
 import AdminHeader from './components/AdminHeader'
 import Sidebar from './components/Sidebar'
 import DashboardTab from './components/DashboardTab'
@@ -315,54 +315,97 @@ export default function AdminDashboard() {
     }
   }
 
-  // Handle mark as read - VERSI YANG BENAR
-  const handleMarkAsRead = async (id: string) => {
+  // Handle mark as read - VERSI DIPERBAIKI DENGAN RETURN BOOLEAN
+  const handleMarkAsRead = async (id: string): Promise<boolean> => {
     try {
       console.log('🚀 Marking message as read:', id)
       
-      const { error } = await supabase
+      // Debug: Cek status sebelum update
+      const { data: currentData } = await supabase
+        .from('contact_messages')
+        .select('status')
+        .eq('id', id)
+        .single()
+      
+      console.log('📊 Current status:', currentData?.status)
+      
+      // Lakukan update
+      const { data, error } = await supabase
         .from('contact_messages')
         .update({
           status: 'read',
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
+        .select() // Tambahkan .select() untuk mendapatkan data yang diupdate
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        throw new Error(`Database error: ${error.message}`)
+      }
       
-      toast.success('✅ Message marked as read!')
+      console.log('✅ Update successful:', data)
       
       // Update state secara langsung untuk immediate feedback
       setContactMessages(prevMessages => 
         prevMessages.map(message => 
           message.id === id 
-            ? { ...message, status: 'read' as const }
+            ? { 
+                ...message, 
+                status: 'read' as const,
+                updated_at: new Date().toISOString()
+              }
             : message
         )
       )
       
-      // Juga update sidebar count
-      await loadContactMessages()
+      return true // Return true untuk sukses
       
     } catch (error: any) {
       console.error('❌ Error marking as read:', error)
-      toast.error(`Error: ${error.message}`)
+      
+      // Debug informasi tambahan
+      console.error('Error context:', {
+        messageId: id,
+        timestamp: new Date().toISOString(),
+        errorType: error?.constructor?.name,
+        errorStack: error?.stack
+      })
+      
+      // Lempar error agar bisa ditangkap di ContactTab
+      throw error
     }
   }
 
-  // Handle delete message - VERSI YANG BENAR
+  // Handle delete message - VERSI DIPERBAIKI
   const handleDeleteMessage = async (id: string) => {
     try {
       console.log('🗑️ Deleting message:', id)
+      
+      const { data: messageToDelete } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .eq('id', id)
+        .single()
+      
+      console.log('Message to delete:', messageToDelete)
       
       const { error } = await supabase
         .from('contact_messages')
         .delete()
         .eq('id', id)
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ Delete error:', error)
+        throw new Error(`Delete failed: ${error.message}`)
+      }
       
-      toast.success('✅ Message deleted successfully')
+      console.log('✅ Delete successful')
       
       // Update state secara langsung untuk immediate feedback
       setContactMessages(prevMessages => 
@@ -371,7 +414,7 @@ export default function AdminDashboard() {
       
     } catch (error: any) {
       console.error('❌ Error deleting message:', error)
-      toast.error(`Error: ${error.message}`)
+      throw error
     }
   }
 
@@ -910,17 +953,6 @@ export default function AdminDashboard() {
     }
   }
 
-  // Handle save settings
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSaveSettings = async (settings: any) => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        console.log('Settings saved:', settings)
-        resolve()
-      }, 1000)
-    })
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -933,137 +965,161 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* Sidebar */}
-      <Sidebar
-        currentUser={currentUser}
-        activeTab={activeTab}
-        pendingCount={pendingAdmins.length}
-        unreadContactCount={contactMessages.filter(m => m.status === 'unread').length}
-        onTabChange={setActiveTab}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#1f2937',
+            color: '#fff',
+            border: '1px solid #374151',
+            borderRadius: '0.5rem',
+          },
+        }}
       />
       
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-4 md:p-6">
-          <AdminHeader 
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-            sidebarOpen={sidebarOpen}
-          />
-          
-          <div className="mt-6">
-            {/* Dashboard Tab */}
-            {activeTab === 'dashboard' && (
-              <DashboardTab 
-                activities={activities}
-                timelineData={timelineData}
-                pendingAdmins={pendingAdmins}
-                adminUsers={adminUsers}
-                contactMessages={contactMessages}
-                onOpenActivityModal={() => {
-                  setActiveTab('activities')
-                  setTimeout(() => openActivityModal('add'), 100)
-                }}
-                onOpenTimelineModal={() => {
-                  setActiveTab('timeline')
-                  setTimeout(() => openTimelineModal('add'), 100)
-                }}
-                onOpenPendingModal={() => setActiveTab('pending')}
-                onOpenAdminManagementModal={() => setActiveTab('admin-management')}
-                onOpenContactModal={() => setActiveTab('contact')}
-              />
-            )}
+      <div className="min-h-screen bg-gray-900 text-white flex">
+        {/* Sidebar */}
+        <Sidebar
+          currentUser={currentUser}
+          activeTab={activeTab}
+          pendingCount={pendingAdmins.length}
+          unreadContactCount={contactMessages.filter(m => m.status === 'unread').length}
+          onTabChange={setActiveTab}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
+        
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-4 md:p-6">
+            <AdminHeader 
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+              sidebarOpen={sidebarOpen}
+            />
             
-            {/* Activities Tab */}
-            {activeTab === 'activities' && (
-              <ActivitiesTab 
-                activities={activities}
-                loading={activitiesLoading}
-                onOpenModal={openActivityModal}
-                onDelete={handleDeleteActivity}
-              />
-            )}
-            
-            {/* Timeline Tab */}
-            {activeTab === 'timeline' && (
-              <TimelineTab 
-                timelineData={timelineData}
-                loading={timelineLoading}
-                onOpenModal={openTimelineModal}
-                onDelete={handleDeleteTimeline}
-              />
-            )}
-            
-            {/* Pending Admins Tab */}
-            {activeTab === 'pending' && (
-              <PendingAdminsTab 
-                pendingAdmins={pendingAdmins}
-                loading={pendingLoading}
-                approving={approvingId}
-                onApprove={handleApproveAdmin}
-                onReject={handleRejectAdmin}
-              />
-            )}
-            
-            {/* Admin Management Tab */}
-            {activeTab === 'admin-management' && (
-              <AdminManagementTab 
-                adminUsers={adminUsers}
-                loading={adminLoading}
-                onUpdateAdmin={handleUpdateAdmin}
-                onDeleteAdmin={handleDeleteAdmin}
-                onRefresh={loadAllAdmins}
-              />
-            )}
-            
-            {/* Contact Messages Tab - DIPERBAIKI */}
-            {activeTab === 'contact' && (
-              <ContactTab 
-                messages={contactMessages}
-                loading={contactLoading}
-                onMarkAsRead={handleMarkAsRead}
-                onDeleteMessage={handleDeleteMessage}
-              />
-            )}
-            
-            {/* Settings Tab (jika diperlukan) */}
-            {activeTab === 'settings' && (
-              <div className="bg-gray-800 rounded-xl p-6">
-                <h2 className="text-2xl font-bold mb-4">Settings</h2>
-                <p className="text-gray-400">Settings page coming soon...</p>
-              </div>
-            )}
+            <div className="mt-6">
+              {/* Dashboard Tab */}
+              {activeTab === 'dashboard' && (
+                <DashboardTab 
+                  activities={activities}
+                  timelineData={timelineData}
+                  pendingAdmins={pendingAdmins}
+                  adminUsers={adminUsers}
+                  contactMessages={contactMessages}
+                  onOpenActivityModal={() => {
+                    setActiveTab('activities')
+                    setTimeout(() => openActivityModal('add'), 100)
+                  }}
+                  onOpenTimelineModal={() => {
+                    setActiveTab('timeline')
+                    setTimeout(() => openTimelineModal('add'), 100)
+                  }}
+                  onOpenPendingModal={() => setActiveTab('pending')}
+                  onOpenAdminManagementModal={() => setActiveTab('admin-management')}
+                  onOpenContactModal={() => setActiveTab('contact')}
+                />
+              )}
+              
+              {/* Activities Tab */}
+              {activeTab === 'activities' && (
+                <ActivitiesTab 
+                  activities={activities}
+                  loading={activitiesLoading}
+                  onOpenModal={openActivityModal}
+                  onDelete={handleDeleteActivity}
+                />
+              )}
+              
+              {/* Timeline Tab */}
+              {activeTab === 'timeline' && (
+                <TimelineTab 
+                  timelineData={timelineData}
+                  loading={timelineLoading}
+                  onOpenModal={openTimelineModal}
+                  onDelete={handleDeleteTimeline}
+                />
+              )}
+              
+              {/* Pending Admins Tab */}
+              {activeTab === 'pending' && (
+                <PendingAdminsTab 
+                  pendingAdmins={pendingAdmins}
+                  loading={pendingLoading}
+                  approving={approvingId}
+                  onApprove={handleApproveAdmin}
+                  onReject={handleRejectAdmin}
+                />
+              )}
+              
+              {/* Admin Management Tab */}
+              {activeTab === 'admin-management' && (
+                <AdminManagementTab 
+                  adminUsers={adminUsers}
+                  loading={adminLoading}
+                  onUpdateAdmin={handleUpdateAdmin}
+                  onDeleteAdmin={handleDeleteAdmin}
+                  onRefresh={loadAllAdmins}
+                />
+              )}
+              
+              {/* Contact Messages Tab - DIPERBAIKI */}
+              {activeTab === 'contact' && (
+                <ContactTab 
+                  messages={contactMessages}
+                  loading={contactLoading}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDeleteMessage={handleDeleteMessage}
+                />
+              )}
+              
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <div className="bg-gray-800 rounded-xl p-6">
+                  <h2 className="text-2xl font-bold mb-4">Settings</h2>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-900/50 rounded-lg">
+                      <h3 className="font-semibold text-white mb-2">Account Settings</h3>
+                      <p className="text-gray-400">Manage your account preferences and notifications</p>
+                    </div>
+                    <div className="p-4 bg-gray-900/50 rounded-lg">
+                      <h3 className="font-semibold text-white mb-2">System Settings</h3>
+                      <p className="text-gray-400">Configure system-wide settings and preferences</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+        
+        {/* Modals */}
+        <TimelineModal 
+          isOpen={timelineModalOpen}
+          mode={modalMode}
+          currentItem={currentTimelineItem}
+          onClose={() => {
+            setTimelineModalOpen(false)
+            setCurrentTimelineItem(null)
+          }}
+          onSubmit={handleTimelineSubmit}
+        />
+        
+        <ActivityModal 
+          isOpen={activityModalOpen}
+          mode={modalMode}
+          currentActivity={currentActivity}
+          uploading={uploading}
+          onClose={() => {
+            setActivityModalOpen(false)
+            setCurrentActivity(null)
+          }}
+          onSubmit={handleActivitySubmit}
+        />
       </div>
-      
-      {/* Modals */}
-      <TimelineModal 
-        isOpen={timelineModalOpen}
-        mode={modalMode}
-        currentItem={currentTimelineItem}
-        onClose={() => {
-          setTimelineModalOpen(false)
-          setCurrentTimelineItem(null)
-        }}
-        onSubmit={handleTimelineSubmit}
-      />
-      
-      <ActivityModal 
-        isOpen={activityModalOpen}
-        mode={modalMode}
-        currentActivity={currentActivity}
-        uploading={uploading}
-        onClose={() => {
-          setActivityModalOpen(false)
-          setCurrentActivity(null)
-        }}
-        onSubmit={handleActivitySubmit}
-      />
-    </div>
+    </>
   )
 }

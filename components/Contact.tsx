@@ -260,17 +260,7 @@ export default function Contact() {
               </div>
 
               {/* Info tambahan */}
-              <div className="mt-8 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <div className="flex items-start">
-                  <FaExclamationCircle className="text-yellow-500 mt-1 mr-3" />
-                  <div>
-                    <h4 className="font-medium text-white mb-1">Catatan</h4>
-                    <p className="text-sm text-gray-400">
-                      Pesan Anda akan langsung masuk ke sistem kami. Tim admin akan membalas melalui email dalam 1-2 hari kerja.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            
             </div>
           </div>
         </div>

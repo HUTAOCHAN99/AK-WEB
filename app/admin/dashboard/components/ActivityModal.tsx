@@ -172,7 +172,7 @@ export default function ActivityModal({
       <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-white">
-            {mode === "add" ? "➕ Add New Activity" : "✏️ Edit Activity"}
+            {mode === "add" ? " Add New Activity" : " Edit Activity"}
           </h2>
           <button
             onClick={handleClose}
@@ -539,9 +539,9 @@ export default function ActivityModal({
                   <span>Uploading...</span>
                 </>
               ) : mode === "add" ? (
-                "➕ Add Activity"
+                "Add Activity"
               ) : (
-                "💾 Save Changes"
+                "Save Changes"
               )}
             </button>
           </div>
