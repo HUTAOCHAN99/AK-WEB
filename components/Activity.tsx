@@ -71,9 +71,9 @@ export default function Activity() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <p className="text-primary font-semibold mb-2 tracking-wider">
-            -- Activity
+            -- Aktivitas
           </p>
-          <h2 className="text-3xl font-semibold text-white">Our Activities</h2>
+          <h2 className="text-3xl font-semibold text-white">Aktivitas Kami</h2>
           <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
             Berbagai kegiatan yang kami selenggarakan untuk membangun ukhuwah
             islamiyah dan mengembangkan potensi anggota di bidang teknologi dan

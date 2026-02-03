@@ -6,7 +6,6 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 
-
 export default function Hero() {
   return (
     <section
@@ -77,15 +76,15 @@ export default function Hero() {
               Yogyakarta.
             </h2>
             <p className="text-gray-300 mb-8 text-justify">
-              We are a Muslim Family Organization. We have a passion to build
-              and develop the Akhlaq and also the environment of Muslim
-              students.
+              Kami merupakan organisasi kekeluargaan Muslim yang berkomitmen
+              dalam membangun dan mengembangkan akhlak serta lingkungan yang
+              islami bagi mahasiswa Muslim.
             </p>
             <a
               href="#about"
               className="inline-flex items-center text-primary font-medium hover:text-primary-light transition duration-300"
             >
-              Petualangan kami
+              Perjalanan kami
               <FaArrowRight className="ml-2 text-xl" />
             </a>
           </div>

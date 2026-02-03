@@ -35,10 +35,10 @@ export default function Division() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <p className="text-primary font-semibold mb-2 tracking-wider">
-            -- Division
+            -- Divisi
           </p>
           <h2 className="text-3xl font-semibold text-white">
-            Our Divisions
+            Divisi Kami
           </h2>
         </div>
 

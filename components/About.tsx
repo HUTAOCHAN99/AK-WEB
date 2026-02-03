@@ -28,7 +28,7 @@ export default function About() {
             </p>
             <p className="text-gray-300 mb-8 text-justify">
               Hello everyone 👋, Kami adalah perkumpulan mahasiswa Islam di
-              Informatika UPNYK, dikenal sebagai Organisasi Dakwah Kampus. Kami
+              Informatika UPNYK, dikenal sebagai Lembaga Dakwah Kampus. Kami
               berkiprah di tingkat jurusan Informatika dengan tujuan
               menyelaraskan dakwah dan IPTEK. Melalui usaha kami, kami berusaha
               menciptakan lingkungan yang seimbang di mana nilai-nilai keislaman

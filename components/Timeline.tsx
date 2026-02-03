@@ -61,13 +61,13 @@ export default function Timeline() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <p className="text-primary font-semibold mb-2 tracking-wider">
-            -- Journey
+            -- Perjalanan
           </p>
           <h2 className="text-3xl font-semibold text-white">
-            Our Journey
+            Perjalanan Kami
           </h2>
           <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-            The growth and development timeline of KKMI Al-Khawarizmi
+            Rekam Jejak Perkembangan KKMI Al-Khawarizmi
           </p>
         </div>
         
@@ -161,17 +161,17 @@ export default function Timeline() {
         <div className="mt-16 text-center">
           <div className="bg-linear-to-r from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-8 max-w-2xl mx-auto">
             <h3 className="text-xl font-semibold text-white mb-2">
-              Want to contribute to our timeline?
+             Ingin berkontribusi untuk content kami?
             </h3>
             <p className="text-gray-400 mb-4">
-              If youre an admin, you can add new timeline events
+              Jika Anda merupakan pengurus, Anda dapat menambahkan konten atau kegiatan baru.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="#contact"
                 className="inline-flex items-center justify-center px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg border border-gray-600 transition duration-300"
               >
-                Contact Admin
+                Hubungi Admin
               </a>
             </div>
           </div>

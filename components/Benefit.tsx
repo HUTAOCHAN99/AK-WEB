@@ -22,7 +22,7 @@ export default function Benefit() {
             -- Partner
           </p>
           <h2 className="text-3xl font-semibold text-white">
-            Our Partners
+            Partner Kami
           </h2>
         </div>
 
@@ -52,7 +52,7 @@ export default function Benefit() {
             -- Benefit 
           </p>
           <h2 className="text-3xl font-semibold text-white">
-            Our Benefits 
+            Benefit Bergabung
           </h2>
         </div>
 
