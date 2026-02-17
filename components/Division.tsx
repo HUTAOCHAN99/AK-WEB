@@ -3,7 +3,6 @@ import {
   FaCode, 
   FaFemale, 
   FaDesktop,
-  FaArrowRight 
 } from 'react-icons/fa'
 
 export default function Division() {
@@ -54,10 +53,6 @@ export default function Division() {
               <p className="text-gray-300 mb-4">
                 {division.description}
               </p>
-              <button className="text-primary font-medium hover:text-primary-light transition flex items-center">
-                View More
-                <FaArrowRight className="ml-2" />
-              </button>
             </div>
           ))}
         </div>

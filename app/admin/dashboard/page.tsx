@@ -946,7 +946,7 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      router.push('/auth/login')
+      router.push('/admin/auth/login')
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('Logout failed')
