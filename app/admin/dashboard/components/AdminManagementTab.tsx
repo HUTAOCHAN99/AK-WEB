@@ -430,28 +430,6 @@ export default function AdminManagementTab({
         <div className="text-sm text-gray-400">
           Showing {filteredAdmins.length} of {adminUsers.length} admins
         </div>
-        
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              // Implement export functionality
-              console.log('Export admins')
-            }}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition duration-300"
-          >
-            Export CSV
-          </button>
-          
-          <button
-            onClick={() => {
-              // Implement print functionality
-              window.print()
-            }}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition duration-300"
-          >
-            Print List
-          </button>
-        </div>
       </div>
     </div>
   )
