@@ -189,6 +189,15 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {/* TAMBAHKAN LINK FORGOT PASSWORD DI SINI */}
+              <div className="flex justify-end mt-1">
+                <Link 
+                  href="/admin/auth/reset-password" 
+                  className="text-sm text-primary hover:text-primary-light transition duration-300"
+                >
+                  Lupa Password?
+                </Link>
+              </div>
             </div>
             
             <button
